@@ -1,0 +1,37 @@
+{
+  "root": "D:\\Pucho claude project\\oct2026\\Pucho_sonic_group\\sonic-group-os",
+  "stage": "demo",
+  "tier": "v4",
+  "files_scanned": 121,
+  "flows_scanned": 2,
+  "counts": {
+    "Critical": 0,
+    "High": 0,
+    "Medium": 1,
+    "Low": 2
+  },
+  "findings": [
+    {
+      "id": "W4",
+      "severity": "Medium",
+      "where": "workflows\\BILL_READ\\BILL_READ.json \u00b7 step_extract_ai (Read the document (OCR + AI))",
+      "what": "user input goes straight into an AI prompt (prompt injection)",
+      "fix": "Pass user text through a CODE node that trims, length-caps and wraps it in clear delimiters; tell the model to treat it as data; validate the model's JSON."
+    },
+    {
+      "id": "W1",
+      "severity": "Low",
+      "where": "workflows\\BILL_READ\\BILL_READ.json \u00b7 trigger (BILL_READ \u2014 UI \u2192 action (extract))",
+      "what": "`BILL_READ.json` webhook has no authentication \u2014 anyone who learns the URL can run it (the URL itself is the secret: it lives only in the app's server environment)",
+      "fix": "Header Auth on the trigger with a secret the app sends from the environment; reject a missing/wrong secret in the first CODE node."
+    },
+    {
+      "id": "W1",
+      "severity": "Low",
+      "where": "workflows\\SALES_INVOICE\\SALES_INVOICE.json \u00b7 trigger (SALES_INVOICE \u2014 UI \u2192 action (raise))",
+      "what": "`SALES_INVOICE.json` webhook has no authentication \u2014 anyone who learns the URL can run it (the URL itself is the secret: it lives only in the app's server environment)",
+      "fix": "Header Auth on the trigger with a secret the app sends from the environment; reject a missing/wrong secret in the first CODE node."
+    }
+  ],
+  "limitation": "Pattern scan only. It cannot judge business logic, authorisation paths, data flows between steps, or Studio settings not in the JSON. The auditor agent covers those."
+}
