@@ -10,6 +10,7 @@
   "Next_Due_Date": "<string>",
   "Monthly_Amount": 0,
   "GST_Rate": 0,
+  "GST_Type": "<string>",
   "GST_Amount": 0,
   "Monthly_Total": 0,
   "Tenant_Ledger": "<string>",

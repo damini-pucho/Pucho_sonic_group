@@ -73,6 +73,7 @@ id: Centre_ID (CEN-…) · status: Status ['Active', 'Inactive']
 | End_Date | date |
 | Monthly_Amount | numeric |
 | GST_Rate | numeric |
+| GST_Type | text |
 | GST_Amount | numeric |
 | Monthly_Total | numeric |
 | Due_Day | numeric |
@@ -97,6 +98,7 @@ id: Agreement_ID (AG-…) · status: Status ['Active', 'On Hold', 'Ended']
 | Due_Date | date |
 | Taxable_Value | numeric |
 | GST_Rate | numeric |
+| GST_Type | text |
 | GST_Amount | numeric |
 | Total_Amount | numeric |
 | Tenant_Ledger | text |

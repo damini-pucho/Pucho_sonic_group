@@ -90,7 +90,7 @@ Data: **PostgreSQL** (one database per client, single-tenant) · security: **§1
 | Tally export | Mark as imported in Tally | status: 1 field · direct |
 | Tally export | Mark as imported in Tally | status: 1 field · direct |
 | Agreements & sales | Raise sales invoice | custom: 0 fields · SALES_INVOICE |
-| Agreements & sales | Add agreement | create: 16 fields · direct |
+| Agreements & sales | Add agreement | create: 17 fields · direct |
 | Agreements & sales | Edit agreement | edit: 7 fields · direct |
 | Vendor ledgers | Add vendor ledger | create: 5 fields · direct |
 | Vendor ledgers | Edit vendor ledger | edit: 5 fields · direct |

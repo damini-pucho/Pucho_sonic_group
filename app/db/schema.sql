@@ -140,6 +140,7 @@ CREATE TABLE IF NOT EXISTS "agreements" (
   "end_date" date,
   "monthly_amount" numeric,
   "gst_rate" numeric,
+  "gst_type" text,
   "gst_amount" numeric,
   "monthly_total" numeric,
   "due_day" numeric,
@@ -164,6 +165,7 @@ CREATE TABLE IF NOT EXISTS "sales_invoices" (
   "due_date" date,
   "taxable_value" numeric,
   "gst_rate" numeric,
+  "gst_type" text,
   "gst_amount" numeric,
   "total_amount" numeric,
   "tenant_ledger" text,
@@ -241,6 +243,7 @@ ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "start_date" date;
 ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "end_date" date;
 ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "monthly_amount" numeric;
 ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "gst_rate" numeric;
+ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "gst_type" text;
 ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "gst_amount" numeric;
 ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "monthly_total" numeric;
 ALTER TABLE "agreements" ADD COLUMN IF NOT EXISTS "due_day" numeric;
@@ -259,6 +262,7 @@ ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "period" text;
 ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "due_date" date;
 ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "taxable_value" numeric;
 ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "gst_rate" numeric;
+ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "gst_type" text;
 ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "gst_amount" numeric;
 ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "total_amount" numeric;
 ALTER TABLE "sales_invoices" ADD COLUMN IF NOT EXISTS "tenant_ledger" text;

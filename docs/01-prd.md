@@ -24,7 +24,7 @@ _Generated 2026-10-08 from os.yaml._
 - **BILL_READ** — trigger `webhook.catch_webhook`; writes bills, audit_log
   - `extract` — model advanced, ~15s, ~8 credits; payload Bill_Photo, Centre → result Vendor_Name, Vendor_GSTIN, Bill_No, Bill_Date, Taxable_Value, GST_Rate, CGST, SGST, IGST, Total_Amount, Narration, Tally_Ledger, Expense_Head, AI_Confidence
 - **SALES_INVOICE** — trigger `webhook.catch_webhook`; writes sales_invoices, agreements, audit_log
-  - `raise` — model none, ~5s, ~5 credits; payload Agreement_ID, Tenant_Name, Tenant_State, Centre, Unit, Next_Due_Date, Monthly_Amount, GST_Rate, GST_Amount, Monthly_Total, Tenant_Ledger, Income_Head → result Invoice_ID
+  - `raise` — model none, ~5s, ~5 credits; payload Agreement_ID, Tenant_Name, Tenant_State, Centre, Unit, Next_Due_Date, Monthly_Amount, GST_Rate, GST_Type, GST_Amount, Monthly_Total, Tenant_Ledger, Income_Head → result Invoice_ID
 
 ## Rules in code
 - The four stages are status changes the app makes itself (direct patch): At Centre → With HO → With Director → With Accounts → Finalised → Exported; who moved it and when is the audit row written from the session

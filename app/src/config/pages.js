@@ -1782,6 +1782,7 @@ export const PAGES = [
                       "columns": [
                         "Monthly_Amount",
                         "GST_Rate",
+                        "GST_Type",
                         "GST_Amount",
                         "Monthly_Total"
                       ]
@@ -1912,6 +1913,7 @@ export const PAGES = [
           "Next_Due_Date",
           "Monthly_Amount",
           "GST_Rate",
+          "GST_Type",
           "GST_Amount",
           "Monthly_Total",
           "Tenant_Ledger",
@@ -2008,6 +2010,17 @@ export const PAGES = [
             "label": "GST rate (%)",
             "type": "number",
             "default": "18"
+          },
+          {
+            "key": "GST_Type",
+            "label": "GST type",
+            "type": "select",
+            "options": [
+              "CGST + SGST",
+              "IGST"
+            ],
+            "default": "CGST + SGST",
+            "required": true
           },
           {
             "key": "GST_Amount",
