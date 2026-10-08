@@ -1,0 +1,3 @@
+  ok   BILL_READ.extract — 6 steps
+  ok   SALES_INVOICE.raise — 7 steps
+flow_sim: 2 action run(s), 0 failure(s)
