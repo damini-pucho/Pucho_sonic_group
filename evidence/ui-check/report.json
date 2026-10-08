@@ -1,17 +1,10 @@
 {
   "os": "Sonic Bills & Income",
-  "status": "fail",
+  "status": "pass",
   "viewport": "desktop",
-  "passed": 594,
-  "failed": 6,
-  "failures": [
-    "ho_approvals: K7 KPI(s) ['Waiting with HO', 'Open queries', 'To verify at centre', 'Bills today'] show a number but do not open the list behind it (no data-os-kpi-link)",
-    "accounts_approvals: K7 KPI(s) ['Waiting with Accounts', 'Vendor not mapped', 'Bills ready for Tally', 'Exported this month'] show a number but do not open the list behind it (no data-os-kpi-link)",
-    "tally_export \u203a tally-preview: modal did not open",
-    "tally_export \u203a tally-download: modal did not open",
-    "pwa: icon /brand/icon-192.png not served",
-    "tally_export: nav badge shows `None`, seed rows matching `Status=Finalised` = 2"
-  ],
+  "passed": 596,
+  "failed": 0,
+  "failures": [],
   "warnings": [
     "income \u203a add_agreement: U6 17 fields in one form \u2014 split into sections or steps of 7 or fewer",
     "role admin: U4 8 items in sidebar group `\u2014` (admin) \u2014 group them into sections of 7 or fewer"
@@ -65,7 +58,9 @@
     "evidence\\ui-check\\modal-accounts-approvals-bill-reject.png",
     "evidence\\ui-check\\page-tally_export.png",
     "evidence\\ui-check\\tab-tally_export-1.png",
+    "evidence\\ui-check\\drawer-tally_export-tab-1.png",
     "evidence\\ui-check\\tab-tally_export-2.png",
+    "evidence\\ui-check\\drawer-tally_export-tab-2.png",
     "evidence\\ui-check\\tab-tally_export-3.png",
     "evidence\\ui-check\\drawer-tally_export-tab-3.png",
     "evidence\\ui-check\\drawer-tally_export-page.png",
@@ -99,7 +94,6 @@
     "evidence\\ui-check\\page-activity.png",
     "evidence\\ui-check\\filter-activity-1.png",
     "evidence\\ui-check\\filter-activity-2.png",
-    "evidence\\ui-check\\drawer-activity-page.png",
     "evidence\\ui-check\\page-settings.png",
     "evidence\\ui-check\\page-users.png",
     "evidence\\ui-check\\modal-users-add-user.png",
