@@ -1,0 +1,404 @@
+{
+  "created": "1700000000000",
+  "updated": "1700000000000",
+  "name": "BILL_READ",
+  "description": "Sonic Bills & Income · BILL_READ: one flow, router on action (extract); input = the action's payload fields (Bill_Photo, Centre); rules in CODE nodes; writes through the app's /api/data; every path ends in a Return.",
+  "tags": [],
+  "pieces": [
+    "@puchoaistudio/tool-webhook",
+    "@puchoaistudio/tool-http",
+    "@puchoaistudio/tool-ocr-analytics"
+  ],
+  "template": {
+    "displayName": "BILL_READ",
+    "trigger": {
+      "name": "trigger",
+      "valid": true,
+      "displayName": "BILL_READ — UI → action (extract)",
+      "type": "TOOL_TRIGGER",
+      "settings": {
+        "pieceName": "@puchoaistudio/tool-webhook",
+        "pieceVersion": "^2.0.4",
+        "input": {
+          "authType": "none",
+          "authFields": {}
+        },
+        "sampleData": {},
+        "propertySettings": {
+          "authType": {
+            "type": "MANUAL"
+          },
+          "authFields": {
+            "type": "MANUAL",
+            "schema": {}
+          },
+          "liveMarkdown": {
+            "type": "MANUAL"
+          },
+          "syncMarkdown": {
+            "type": "MANUAL"
+          },
+          "testMarkdown": {
+            "type": "MANUAL"
+          }
+        },
+        "triggerName": "catch_webhook"
+      },
+      "nextAction": {
+        "name": "step_constants",
+        "skip": false,
+        "type": "CODE",
+        "valid": true,
+        "settings": {
+          "input": {
+            "trigger": "{{trigger}}",
+            "body": "{{trigger['body']}}"
+          },
+          "sampleData": {},
+          "sourceCode": {
+            "code": "// @ts-nocheck\nexport const code = async (inputs) => {\n  const C = {\n    \"app_url\": \"SET_IN_STUDIO_APP_URL\",\n    \"inbound_token\": \"SET_IN_STUDIO_INBOUND_TOKEN\",\n    \"flow\": \"BILL_READ\",\n    \"brand_tone\": \"formal, precise, courteous\",\n    \"brand_signature\": \"For Sonic Group\",\n    \"followup_days\": [\n      2,\n      5,\n      10\n    ],\n    \"quote_validity_days\": 30,\n    \"same_day_quote_hours\": 8,\n    \"default_owner\": \"\",\n    \"own_domain\": \"\",\n    \"quote_series\": \"SMT/Q\",\n    \"catalogue\": [],\n    \"options\": [],\n    \"owners\": [],\n    \"vendor_ledgers\": [\n      {\n        \"Map_ID\": \"VL-001\",\n        \"Vendor_Name\": \"XYZ Private Limited\",\n        \"Vendor_GSTIN\": \"29AAACX1234K1Z5\",\n        \"City\": \"Bengaluru\",\n        \"Tally_Ledger\": \"XYZ Private Limited Bangalore\",\n        \"Expense_Head\": \"Repairs & Maintenance\",\n        \"Status\": \"Active\"\n      },\n      {\n        \"Map_ID\": \"VL-002\",\n        \"Vendor_Name\": \"XYZ Private Limited\",\n        \"Vendor_GSTIN\": \"27AAACX1234K1Z9\",\n        \"City\": \"Pune\",\n        \"Tally_Ledger\": \"XYZ Private Limited Pune\",\n        \"Expense_Head\": \"Repairs & Maintenance\",\n        \"Status\": \"Active\"\n      },\n      {\n        \"Map_ID\": \"VL-003\",\n        \"Vendor_Name\": \"Shree Electricals\",\n        \"Vendor_GSTIN\": \"27AAKFS4471M1Z2\",\n        \"City\": \"Pune\",\n        \"Tally_Ledger\": \"Shree Electricals - Pune\",\n        \"Expense_Head\": \"Electrical Repairs\",\n        \"Status\": \"Active\"\n      },\n      {\n        \"Map_ID\": \"VL-004\",\n        \"Vendor_Name\": \"Clean Pro Facility Services\",\n        \"Vendor_GSTIN\": \"27AAGFC8890Q1Z1\",\n        \"City\": \"Mumbai\",\n        \"Tally_Ledger\": \"Clean Pro Facility Services\",\n        \"Expense_Head\": \"Housekeeping Charges\",\n        \"Status\": \"Active\"\n      },\n      {\n        \"Map_ID\": \"VL-005\",\n        \"Vendor_Name\": \"Secure Guard Services\",\n        \"Vendor_GSTIN\": \"27AAJFS5512R1Z4\",\n        \"City\": \"Nagpur\",\n        \"Tally_Ledger\": \"Secure Guard Services Nagpur\",\n        \"Expense_Head\": \"Security Charges\",\n        \"Status\": \"Active\"\n      },\n      {\n        \"Map_ID\": \"VL-006\",\n        \"Vendor_Name\": \"Interior Craft Fit-outs\",\n        \"Vendor_GSTIN\": \"27AAECI7781H1Z6\",\n        \"City\": \"Mumbai\",\n        \"Tally_Ledger\": \"Interior Craft Fit-outs\",\n        \"Expense_Head\": \"Fit-out Expenses\",\n        \"Status\": \"Active\"\n      },\n      {\n        \"Map_ID\": \"VL-007\",\n        \"Vendor_Name\": \"Office Mart Stationers\",\n        \"Vendor_GSTIN\": \"27ABCPO2210L1Z8\",\n        \"City\": \"Pune\",\n        \"Tally_Ledger\": \"Office Mart Stationers\",\n        \"Expense_Head\": \"Printing & Stationery\",\n        \"Status\": \"Active\"\n      },\n      {\n        \"Map_ID\": \"VL-008\",\n        \"Vendor_Name\": \"Bescom Power Supply\",\n        \"City\": \"Bengaluru\",\n        \"Tally_Ledger\": \"BESCOM Whitefield\",\n        \"Expense_Head\": \"Electricity Charges\",\n        \"Status\": \"Active\"\n      }\n    ]\n  };\n  C.today = new Date().toISOString(); C.year = new Date().getFullYear();\n  C.catalogue_text = C.catalogue.map(c => c.code + ' = ' + c.name + (c.product_line ? ' (' + c.product_line + ')' : '')).join('; ');\n  C.options_for_model = (C.options || []).filter(o => o.model === ((inputs.body || {}).Model_Code || '')).map(o => o.code + ' = ' + o.description).join('; ');\n  return C;\n};",
+            "packageJson": "{}"
+          },
+          "errorHandlingOptions": {
+            "retryOnFailure": {
+              "value": false
+            },
+            "continueOnFailure": {
+              "value": false
+            }
+          }
+        },
+        "nextAction": {
+          "name": "step_router",
+          "skip": false,
+          "type": "ROUTER",
+          "valid": true,
+          "children": [
+            {
+              "name": "step_extract_ai",
+              "skip": false,
+              "type": "PIECE",
+              "valid": true,
+              "settings": {
+                "input": {
+                  "url": "{{trigger['body']['Bill_Photo']}}",
+                  "model": "openrouter/anthropic/claude-sonnet-4.5",
+                  "query": "You read one expense bill (a phone photo) for Sonic Group, a company that rents and fits out commercial spaces in India.\nThe bill was uploaded at the centre {{trigger['body']['Centre']}}. Read exactly what is printed — never guess a number you cannot see.\nExtract: the vendor name as printed, the vendor GSTIN, the bill number, the bill date (YYYY-MM-DD), the taxable value,\nthe GST rate in percent (if several rates are printed, the rate on the largest line), CGST, SGST and IGST amounts\n(0 when absent), the bill total, and a one-line narration of what was bought or done, in plain English.\nThen pick the matching row from Sonic Group's vendor ledger mapping by GSTIN first, then by vendor name and city:\n{{step_constants['vendor_ledgers']}}\nCopy its Tally_Ledger and Expense_Head exactly; when no row matches, leave both empty.\nReply ONLY with JSON: {\"Vendor_Name\": \"\", \"Vendor_GSTIN\": \"\", \"Bill_No\": \"\", \"Bill_Date\": \"\", \"Taxable_Value\": 0, \"GST_Rate\": 0, \"CGST\": 0, \"SGST\": 0, \"IGST\": 0, \"Total_Amount\": 0, \"Narration\": \"\", \"Tally_Ledger\": \"\", \"Expense_Head\": \"\", \"AI_Confidence\": 0.0}\n",
+                  "puchoModelKey": "openrouter/anthropic/claude-sonnet-4.5",
+                  "puchoProviderName": "OpenRouter"
+                },
+                "pieceName": "@puchoaistudio/tool-ocr-analytics",
+                "actionName": "askImage/PDF",
+                "sampleData": {},
+                "pieceVersion": "^2.3.5",
+                "propertySettings": {
+                  "url": {
+                    "type": "MANUAL"
+                  },
+                  "model": {
+                    "type": "MANUAL"
+                  },
+                  "query": {
+                    "type": "MANUAL"
+                  },
+                  "puchoModelKey": {
+                    "type": "MANUAL"
+                  },
+                  "puchoProviderName": {
+                    "type": "MANUAL"
+                  }
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": true
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "nextAction": {
+                "name": "step_extract_build",
+                "skip": false,
+                "type": "CODE",
+                "valid": true,
+                "settings": {
+                  "input": {
+                    "ai_output": "{{step_extract_ai['data']}}",
+                    "C": "{{step_constants}}",
+                    "b": "{{trigger['body']}}"
+                  },
+                  "sampleData": {},
+                  "sourceCode": {
+                    "code": "// @ts-nocheck\nexport const code = async (inputs) => {\n  let parsed = {\"Vendor_Name\": \"\", \"Vendor_GSTIN\": \"\", \"Bill_No\": \"\", \"Bill_Date\": \"\", \"Taxable_Value\": 0, \"GST_Rate\": 0, \"CGST\": 0, \"SGST\": 0, \"IGST\": 0, \"Total_Amount\": 0, \"Narration\": \"\", \"Tally_Ledger\": \"\", \"Expense_Head\": \"\", \"AI_Confidence\": 0};\n  try { const clean = String(inputs.ai_output).replace(/```json\\s*/g,'').replace(/```\\s*/g,'').trim(); const m = clean.match(/\\{[\\s\\S]*\\}/); parsed = { ...parsed, ...JSON.parse(m ? m[0] : clean) }; } catch (e) { parsed._parse_error = 'true'; }\n  const build = async (inputs) => {\n  const C = inputs.C, p = inputs.b || {}, r = parsed || {};\n  const allowed = [\"Bill_ID\", \"Uploaded_At\", \"Centre\", \"Centre_Coordinator\", \"Bill_Photo\", \"Vendor_Name\", \"Vendor_GSTIN\", \"Bill_No\", \"Bill_Date\", \"Taxable_Value\", \"GST_Rate\", \"CGST\", \"SGST\", \"IGST\", \"Total_Amount\", \"Narration\", \"Tally_Ledger\", \"Expense_Head\", \"AI_Confidence\", \"Status\", \"Query_From\", \"Query_Remarks\", \"Query_Reply\", \"Accounts_Remarks\", \"Exported_At\"]; const fills = {\"Status\": \"At Centre\", \"Uploaded_At\": \"now\"};\n  const title = (s) => s.replace(/(^|_)(\\w)/g, (m, a, b) => a + b.toUpperCase());\n  const row = {}; for (const k of allowed) { if (p[k] !== undefined) row[k] = p[k]; else if (r[k] !== undefined) row[k] = r[k]; else if (r[k.toLowerCase()] !== undefined) row[k] = r[k.toLowerCase()]; }\n  for (const k of Object.keys(r)) { const t = title(k); if (allowed.includes(t) && row[t] === undefined) row[t] = Array.isArray(r[k]) ? r[k].join('; ') : r[k]; }\n  for (const [k, v] of Object.entries(fills)) row[k] = v === 'now' ? new Date().toISOString() : v;\n  row['Bill_ID'] = '';   // the app numbers it\n  row['Uploaded_At'] = row['Uploaded_At'] || new Date().toISOString();\n  for (const k of allowed) if (row[k] === undefined) row[k] = '';\n  return { row };\n};\n  const out = await build(inputs);\n  return { ...out, result: parsed };\n};",
+                    "packageJson": "{}"
+                  },
+                  "errorHandlingOptions": {
+                    "retryOnFailure": {
+                      "value": false
+                    },
+                    "continueOnFailure": {
+                      "value": false
+                    }
+                  }
+                },
+                "nextAction": {
+                  "name": "step_extract_insert",
+                  "skip": false,
+                  "type": "PIECE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "method": "POST",
+                      "url": "{{step_constants['app_url']}}/api/data/bills",
+                      "headers": {
+                        "Content-Type": "application/json",
+                        "Authorization": "Bearer {{step_constants['inbound_token']}}",
+                        "X-Flow": "{{step_constants['flow']}}"
+                      },
+                      "queryParams": {},
+                      "authType": "NONE",
+                      "body_type": "json",
+                      "body": {
+                        "data": {
+                          "Bill_ID": "{{step_extract_build['row']['Bill_ID']}}",
+                          "Uploaded_At": "{{step_extract_build['row']['Uploaded_At']}}",
+                          "Centre": "{{step_extract_build['row']['Centre']}}",
+                          "Centre_Coordinator": "{{step_extract_build['row']['Centre_Coordinator']}}",
+                          "Bill_Photo": "{{step_extract_build['row']['Bill_Photo']}}",
+                          "Vendor_Name": "{{step_extract_build['row']['Vendor_Name']}}",
+                          "Vendor_GSTIN": "{{step_extract_build['row']['Vendor_GSTIN']}}",
+                          "Bill_No": "{{step_extract_build['row']['Bill_No']}}",
+                          "Bill_Date": "{{step_extract_build['row']['Bill_Date']}}",
+                          "Taxable_Value": "{{step_extract_build['row']['Taxable_Value']}}",
+                          "GST_Rate": "{{step_extract_build['row']['GST_Rate']}}",
+                          "CGST": "{{step_extract_build['row']['CGST']}}",
+                          "SGST": "{{step_extract_build['row']['SGST']}}",
+                          "IGST": "{{step_extract_build['row']['IGST']}}",
+                          "Total_Amount": "{{step_extract_build['row']['Total_Amount']}}",
+                          "Narration": "{{step_extract_build['row']['Narration']}}",
+                          "Tally_Ledger": "{{step_extract_build['row']['Tally_Ledger']}}",
+                          "Expense_Head": "{{step_extract_build['row']['Expense_Head']}}",
+                          "AI_Confidence": "{{step_extract_build['row']['AI_Confidence']}}",
+                          "Status": "{{step_extract_build['row']['Status']}}",
+                          "Query_From": "{{step_extract_build['row']['Query_From']}}",
+                          "Query_Remarks": "{{step_extract_build['row']['Query_Remarks']}}",
+                          "Query_Reply": "{{step_extract_build['row']['Query_Reply']}}",
+                          "Accounts_Remarks": "{{step_extract_build['row']['Accounts_Remarks']}}",
+                          "Exported_At": "{{step_extract_build['row']['Exported_At']}}"
+                        }
+                      }
+                    },
+                    "pieceName": "@puchoaistudio/tool-http",
+                    "actionName": "send_request",
+                    "sampleData": {},
+                    "pieceVersion": "^2.0.0",
+                    "propertySettings": {
+                      "method": {
+                        "type": "MANUAL"
+                      },
+                      "url": {
+                        "type": "MANUAL"
+                      },
+                      "headers": {
+                        "type": "MANUAL",
+                        "schema": {}
+                      },
+                      "queryParams": {
+                        "type": "MANUAL",
+                        "schema": {}
+                      },
+                      "authType": {
+                        "type": "MANUAL"
+                      },
+                      "body_type": {
+                        "type": "MANUAL"
+                      },
+                      "body": {
+                        "type": "MANUAL",
+                        "schema": {}
+                      }
+                    },
+                    "errorHandlingOptions": {
+                      "retryOnFailure": {
+                        "value": false
+                      },
+                      "continueOnFailure": {
+                        "value": false
+                      }
+                    }
+                  },
+                  "nextAction": {
+                    "name": "step_extract_done",
+                    "skip": false,
+                    "type": "PIECE",
+                    "valid": true,
+                    "settings": {
+                      "input": {
+                        "fields": {
+                          "body": {
+                            "ok": "true",
+                            "action": "extract",
+                            "Bill_ID": "{{step_extract_insert['body'][0]['Bill_ID']}}",
+                            "row": "{{step_extract_insert['body'][0]}}",
+                            "result": "{{step_extract_build['result']}}"
+                          },
+                          "status": 200,
+                          "headers": {}
+                        },
+                        "respond": "stop",
+                        "responseType": "json"
+                      },
+                      "pieceName": "@puchoaistudio/tool-webhook",
+                      "actionName": "return_response",
+                      "sampleData": {},
+                      "pieceVersion": "^2.0.4",
+                      "propertySettings": {
+                        "fields": {
+                          "type": "MANUAL",
+                          "schema": {
+                            "body": {
+                              "type": "JSON",
+                              "required": true,
+                              "displayName": "JSON Body"
+                            },
+                            "status": {
+                              "type": "NUMBER",
+                              "required": false,
+                              "displayName": "Status",
+                              "defaultValue": 200
+                            },
+                            "headers": {
+                              "type": "OBJECT",
+                              "required": false,
+                              "displayName": "Headers"
+                            }
+                          }
+                        },
+                        "respond": {
+                          "type": "MANUAL"
+                        },
+                        "responseType": {
+                          "type": "MANUAL"
+                        }
+                      },
+                      "errorHandlingOptions": {
+                        "retryOnFailure": {
+                          "value": false
+                        },
+                        "continueOnFailure": {
+                          "value": false
+                        }
+                      }
+                    },
+                    "displayName": "Return extract: Bill_ID, row, result"
+                  },
+                  "displayName": "Insert bills: Uploaded_At, Centre, Centre_Coordinator, Bill_Photo, Vendor_Name, Vendor_GSTIN +18 more (Bill_ID numbered by the app)"
+                },
+                "displayName": "Parse AI output · build the row (CODE)"
+              },
+              "displayName": "Read the document (OCR + AI)"
+            },
+            {
+              "name": "step_unknown_action",
+              "skip": false,
+              "type": "PIECE",
+              "valid": true,
+              "settings": {
+                "input": {
+                  "fields": {
+                    "body": {
+                      "ok": "false",
+                      "error": "unknown action",
+                      "action": "{{trigger['body']['action']}}",
+                      "known": [
+                        "extract"
+                      ]
+                    },
+                    "status": 400,
+                    "headers": {}
+                  },
+                  "respond": "stop",
+                  "responseType": "json"
+                },
+                "pieceName": "@puchoaistudio/tool-webhook",
+                "actionName": "return_response",
+                "sampleData": {},
+                "pieceVersion": "^2.0.4",
+                "propertySettings": {
+                  "fields": {
+                    "type": "MANUAL",
+                    "schema": {
+                      "body": {
+                        "type": "JSON",
+                        "required": true,
+                        "displayName": "JSON Body"
+                      },
+                      "status": {
+                        "type": "NUMBER",
+                        "required": false,
+                        "displayName": "Status",
+                        "defaultValue": 200
+                      },
+                      "headers": {
+                        "type": "OBJECT",
+                        "required": false,
+                        "displayName": "Headers"
+                      }
+                    }
+                  },
+                  "respond": {
+                    "type": "MANUAL"
+                  },
+                  "responseType": {
+                    "type": "MANUAL"
+                  }
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": false
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "displayName": "Return 400 unknown action"
+            }
+          ],
+          "settings": {
+            "branches": [
+              {
+                "branchName": "extract",
+                "branchType": "CONDITION",
+                "conditions": [
+                  [
+                    {
+                      "operator": "TEXT_EXACTLY_MATCHES",
+                      "firstValue": "{{trigger['body']['action']}}",
+                      "secondValue": "extract",
+                      "caseSensitive": false
+                    }
+                  ]
+                ]
+              },
+              {
+                "branchName": "unknown action",
+                "branchType": "FALLBACK"
+              }
+            ],
+            "sampleData": {},
+            "executionType": "EXECUTE_FIRST_MATCH"
+          },
+          "displayName": "Route by action"
+        },
+        "displayName": "Constants"
+      }
+    },
+    "valid": true,
+    "agentIds": [],
+    "connectionIds": [],
+    "schemaVersion": "7"
+  },
+  "blogUrl": ""
+}

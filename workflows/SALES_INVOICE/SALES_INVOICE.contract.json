@@ -1,0 +1,23 @@
+{
+  "flow": "SALES_INVOICE",
+  "covers": [
+    "R16"
+  ],
+  "connections": "portable",
+  "fire_and_forget": false,
+  "allow_pieces": [
+    "http",
+    "webhook"
+  ],
+  "allow_names": [
+    "catch_webhook",
+    "return_response",
+    "send_request"
+  ],
+  "require_capabilities": [
+    "receive_SALES_INVOICE=webhook:trigger",
+    "respond_SALES_INVOICE=webhook:respond",
+    "persist_SALES_INVOICE_raise=http:write",
+    "also_SALES_INVOICE_raise=step_raise_also_update:http:write"
+  ]
+}

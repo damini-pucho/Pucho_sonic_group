@@ -1,3 +1,3 @@
 workflow,action,trigger,runs_per_month,credits_per_run,credits_per_month,model,sends,source
-BILL_READ,extract,extract from the OS,330,8,2640,advanced,,declared
-SALES_INVOICE,raise,raise from the OS,40,5,200,none,,declared
+BILL_READ,extract,extract from the OS,330,7,2310,advanced,,flow json
+SALES_INVOICE,raise,raise from the OS,40,7,280,none,,flow json

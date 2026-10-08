@@ -1,0 +1,27 @@
+{
+  "flow": "BILL_READ",
+  "covers": [
+    "R1",
+    "R2",
+    "R3"
+  ],
+  "connections": "portable",
+  "fire_and_forget": false,
+  "allow_pieces": [
+    "http",
+    "ocr-analytics",
+    "webhook"
+  ],
+  "allow_names": [
+    "askImage/PDF",
+    "catch_webhook",
+    "return_response",
+    "send_request"
+  ],
+  "require_capabilities": [
+    "receive_BILL_READ=webhook:trigger",
+    "respond_BILL_READ=webhook:respond",
+    "model_BILL_READ_extract=ocr-analytics:read",
+    "persist_BILL_READ_extract=http:write"
+  ]
+}

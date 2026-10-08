@@ -1,0 +1,451 @@
+{
+  "created": "1700000000000",
+  "updated": "1700000000000",
+  "name": "SALES_INVOICE",
+  "description": "Sonic Bills & Income · SALES_INVOICE: one flow, router on action (raise); input = the action's payload fields (Agreement_ID, Centre, GST_Amount, GST_Rate, GST_Type, Income_Head, Monthly_Amount, Monthly_Total, Next_Due_Date, Tenant_Ledger, Tenant_Name, Tenant_State, Unit); rules in CODE nodes; writes through the app's /api/data; every path ends in a Return.",
+  "tags": [],
+  "pieces": [
+    "@puchoaistudio/tool-webhook",
+    "@puchoaistudio/tool-http"
+  ],
+  "template": {
+    "displayName": "SALES_INVOICE",
+    "trigger": {
+      "name": "trigger",
+      "valid": true,
+      "displayName": "SALES_INVOICE — UI → action (raise)",
+      "type": "TOOL_TRIGGER",
+      "settings": {
+        "pieceName": "@puchoaistudio/tool-webhook",
+        "pieceVersion": "^2.0.4",
+        "input": {
+          "authType": "none",
+          "authFields": {}
+        },
+        "sampleData": {},
+        "propertySettings": {
+          "authType": {
+            "type": "MANUAL"
+          },
+          "authFields": {
+            "type": "MANUAL",
+            "schema": {}
+          },
+          "liveMarkdown": {
+            "type": "MANUAL"
+          },
+          "syncMarkdown": {
+            "type": "MANUAL"
+          },
+          "testMarkdown": {
+            "type": "MANUAL"
+          }
+        },
+        "triggerName": "catch_webhook"
+      },
+      "nextAction": {
+        "name": "step_constants",
+        "skip": false,
+        "type": "CODE",
+        "valid": true,
+        "settings": {
+          "input": {
+            "trigger": "{{trigger}}",
+            "body": "{{trigger['body']}}"
+          },
+          "sampleData": {},
+          "sourceCode": {
+            "code": "// @ts-nocheck\nexport const code = async (inputs) => {\n  const C = {\n    \"app_url\": \"SET_IN_STUDIO_APP_URL\",\n    \"inbound_token\": \"SET_IN_STUDIO_INBOUND_TOKEN\",\n    \"flow\": \"SALES_INVOICE\",\n    \"brand_tone\": \"formal, precise, courteous\",\n    \"brand_signature\": \"For Sonic Group\",\n    \"followup_days\": [\n      2,\n      5,\n      10\n    ],\n    \"quote_validity_days\": 30,\n    \"same_day_quote_hours\": 8,\n    \"default_owner\": \"\",\n    \"own_domain\": \"\",\n    \"quote_series\": \"SMT/Q\",\n    \"catalogue\": [],\n    \"options\": [],\n    \"owners\": []\n  };\n  C.today = new Date().toISOString(); C.year = new Date().getFullYear();\n  C.catalogue_text = C.catalogue.map(c => c.code + ' = ' + c.name + (c.product_line ? ' (' + c.product_line + ')' : '')).join('; ');\n  C.options_for_model = (C.options || []).filter(o => o.model === ((inputs.body || {}).Model_Code || '')).map(o => o.code + ' = ' + o.description).join('; ');\n  return C;\n};",
+            "packageJson": "{}"
+          },
+          "errorHandlingOptions": {
+            "retryOnFailure": {
+              "value": false
+            },
+            "continueOnFailure": {
+              "value": false
+            }
+          }
+        },
+        "nextAction": {
+          "name": "step_router",
+          "skip": false,
+          "type": "ROUTER",
+          "valid": true,
+          "children": [
+            {
+              "name": "step_raise_build",
+              "skip": false,
+              "type": "CODE",
+              "valid": true,
+              "settings": {
+                "input": {
+                  "b": "{{trigger['body']}}"
+                },
+                "sampleData": {},
+                "sourceCode": {
+                  "code": "// @ts-nocheck\nexport const code = async (inputs) => { const p = inputs.b || {}; const now = new Date().toISOString(); const allowed = [\"Invoice_ID\", \"Prepared_At\", \"Agreement_ID\", \"Tenant_Name\", \"Tenant_State\", \"Centre\", \"Period\", \"Due_Date\", \"Taxable_Value\", \"GST_Rate\", \"GST_Type\", \"GST_Amount\", \"Total_Amount\", \"Tenant_Ledger\", \"Income_Head\", \"Narration\", \"Status\", \"Exported_At\"]; const map = {\"Next_Due_Date\": \"Due_Date\", \"Monthly_Amount\": \"Taxable_Value\", \"Monthly_Total\": \"Total_Amount\"}; const fill = {\"Status\": \"Prepared\", \"Prepared_At\": \"now\"};\n  const src = { ...p }; for (const [k, c] of Object.entries(map)) if (p[k] !== undefined) src[c] = p[k];\n  const row = {}; for (const k of allowed) row[k] = src[k] === undefined ? '' : src[k]; for (const [k, v] of Object.entries(fill)) row[k] = v === 'now' ? now : v;\n  if (!row['Prepared_At']) row['Prepared_At'] = now;\n  return { row };\n};",
+                  "packageJson": "{}"
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": false
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "nextAction": {
+                "name": "step_raise_insert",
+                "skip": false,
+                "type": "PIECE",
+                "valid": true,
+                "settings": {
+                  "input": {
+                    "method": "POST",
+                    "url": "{{step_constants['app_url']}}/api/data/sales_invoices",
+                    "headers": {
+                      "Content-Type": "application/json",
+                      "Authorization": "Bearer {{step_constants['inbound_token']}}",
+                      "X-Flow": "{{step_constants['flow']}}"
+                    },
+                    "queryParams": {},
+                    "authType": "NONE",
+                    "body_type": "json",
+                    "body": {
+                      "data": {
+                        "Invoice_ID": "{{step_raise_build['row']['Invoice_ID']}}",
+                        "Prepared_At": "{{step_raise_build['row']['Prepared_At']}}",
+                        "Agreement_ID": "{{step_raise_build['row']['Agreement_ID']}}",
+                        "Tenant_Name": "{{step_raise_build['row']['Tenant_Name']}}",
+                        "Tenant_State": "{{step_raise_build['row']['Tenant_State']}}",
+                        "Centre": "{{step_raise_build['row']['Centre']}}",
+                        "Period": "{{step_raise_build['row']['Period']}}",
+                        "Due_Date": "{{step_raise_build['row']['Due_Date']}}",
+                        "Taxable_Value": "{{step_raise_build['row']['Taxable_Value']}}",
+                        "GST_Rate": "{{step_raise_build['row']['GST_Rate']}}",
+                        "GST_Type": "{{step_raise_build['row']['GST_Type']}}",
+                        "GST_Amount": "{{step_raise_build['row']['GST_Amount']}}",
+                        "Total_Amount": "{{step_raise_build['row']['Total_Amount']}}",
+                        "Tenant_Ledger": "{{step_raise_build['row']['Tenant_Ledger']}}",
+                        "Income_Head": "{{step_raise_build['row']['Income_Head']}}",
+                        "Narration": "{{step_raise_build['row']['Narration']}}",
+                        "Status": "{{step_raise_build['row']['Status']}}",
+                        "Exported_At": "{{step_raise_build['row']['Exported_At']}}"
+                      }
+                    }
+                  },
+                  "pieceName": "@puchoaistudio/tool-http",
+                  "actionName": "send_request",
+                  "sampleData": {},
+                  "pieceVersion": "^2.0.0",
+                  "propertySettings": {
+                    "method": {
+                      "type": "MANUAL"
+                    },
+                    "url": {
+                      "type": "MANUAL"
+                    },
+                    "headers": {
+                      "type": "MANUAL",
+                      "schema": {}
+                    },
+                    "queryParams": {
+                      "type": "MANUAL",
+                      "schema": {}
+                    },
+                    "authType": {
+                      "type": "MANUAL"
+                    },
+                    "body_type": {
+                      "type": "MANUAL"
+                    },
+                    "body": {
+                      "type": "MANUAL",
+                      "schema": {}
+                    }
+                  },
+                  "errorHandlingOptions": {
+                    "retryOnFailure": {
+                      "value": false
+                    },
+                    "continueOnFailure": {
+                      "value": false
+                    }
+                  }
+                },
+                "nextAction": {
+                  "name": "step_raise_also_build",
+                  "skip": false,
+                  "type": "CODE",
+                  "valid": true,
+                  "settings": {
+                    "input": {
+                      "b": "{{trigger['body']}}"
+                    },
+                    "sampleData": {},
+                    "sourceCode": {
+                      "code": "// @ts-nocheck\nexport const code = async (inputs) => {\n  const p = inputs.b || {}; const now = new Date().toISOString();\n  const cols = [\"Agreement_ID\", \"Created_At\", \"Tenant_Name\", \"Tenant_GSTIN\", \"Tenant_State\", \"Centre\", \"Unit\", \"Agreement_Type\", \"Start_Date\", \"End_Date\", \"Monthly_Amount\", \"GST_Rate\", \"GST_Type\", \"GST_Amount\", \"Monthly_Total\", \"Due_Day\", \"Next_Due_Date\", \"Tenant_Ledger\", \"Income_Head\", \"Invoice_Status\", \"Status\"]; const map = {}; const only = [\"Invoice_Status\"]; const fill = {\"Invoice_Status\": \"Raised\"};\n  const src = { ...p }; for (const [k, c] of Object.entries(map)) if (p[k] !== undefined) src[c] = p[k];\n  const patch = {}; for (const [k, v] of Object.entries(src)) { if (!cols.includes(k) || k === 'Agreement_ID' || v === undefined || v === null) continue; if (only && (String(v) === '' || !only.includes(k))) continue; patch[k] = v; }\n  for (const [k, v] of Object.entries(fill)) patch[k] = v === 'now' ? now : v;\n  return { patch, id: String(p['Agreement_ID'] || '') };\n};",
+                      "packageJson": "{}"
+                    },
+                    "errorHandlingOptions": {
+                      "retryOnFailure": {
+                        "value": false
+                      },
+                      "continueOnFailure": {
+                        "value": false
+                      }
+                    }
+                  },
+                  "nextAction": {
+                    "name": "step_raise_also_update",
+                    "skip": false,
+                    "type": "PIECE",
+                    "valid": true,
+                    "settings": {
+                      "input": {
+                        "method": "PATCH",
+                        "url": "{{step_constants['app_url']}}/api/data/agreements",
+                        "headers": {
+                          "Content-Type": "application/json",
+                          "Authorization": "Bearer {{step_constants['inbound_token']}}",
+                          "X-Flow": "{{step_constants['flow']}}"
+                        },
+                        "queryParams": {
+                          "Agreement_ID": "eq.{{step_raise_also_build['id']}}"
+                        },
+                        "authType": "NONE",
+                        "body_type": "json",
+                        "body": {
+                          "data": {
+                            "Tenant_Name": "{{step_raise_also_build['patch']['Tenant_Name']}}",
+                            "Tenant_State": "{{step_raise_also_build['patch']['Tenant_State']}}",
+                            "Centre": "{{step_raise_also_build['patch']['Centre']}}",
+                            "Unit": "{{step_raise_also_build['patch']['Unit']}}",
+                            "Monthly_Amount": "{{step_raise_also_build['patch']['Monthly_Amount']}}",
+                            "GST_Rate": "{{step_raise_also_build['patch']['GST_Rate']}}",
+                            "GST_Type": "{{step_raise_also_build['patch']['GST_Type']}}",
+                            "GST_Amount": "{{step_raise_also_build['patch']['GST_Amount']}}",
+                            "Monthly_Total": "{{step_raise_also_build['patch']['Monthly_Total']}}",
+                            "Next_Due_Date": "{{step_raise_also_build['patch']['Next_Due_Date']}}",
+                            "Tenant_Ledger": "{{step_raise_also_build['patch']['Tenant_Ledger']}}",
+                            "Income_Head": "{{step_raise_also_build['patch']['Income_Head']}}",
+                            "Invoice_Status": "{{step_raise_also_build['patch']['Invoice_Status']}}"
+                          }
+                        }
+                      },
+                      "pieceName": "@puchoaistudio/tool-http",
+                      "actionName": "send_request",
+                      "sampleData": {},
+                      "pieceVersion": "^2.0.0",
+                      "propertySettings": {
+                        "method": {
+                          "type": "MANUAL"
+                        },
+                        "url": {
+                          "type": "MANUAL"
+                        },
+                        "headers": {
+                          "type": "MANUAL",
+                          "schema": {}
+                        },
+                        "queryParams": {
+                          "type": "MANUAL",
+                          "schema": {}
+                        },
+                        "authType": {
+                          "type": "MANUAL"
+                        },
+                        "body_type": {
+                          "type": "MANUAL"
+                        },
+                        "body": {
+                          "type": "MANUAL",
+                          "schema": {}
+                        }
+                      },
+                      "errorHandlingOptions": {
+                        "retryOnFailure": {
+                          "value": false
+                        },
+                        "continueOnFailure": {
+                          "value": false
+                        }
+                      }
+                    },
+                    "nextAction": {
+                      "name": "step_raise_done",
+                      "skip": false,
+                      "type": "PIECE",
+                      "valid": true,
+                      "settings": {
+                        "input": {
+                          "fields": {
+                            "body": {
+                              "ok": "true",
+                              "action": "raise",
+                              "Invoice_ID": "{{step_raise_insert['body'][0]['Invoice_ID']}}",
+                              "row": "{{step_raise_insert['body'][0]}}"
+                            },
+                            "status": 200,
+                            "headers": {}
+                          },
+                          "respond": "stop",
+                          "responseType": "json"
+                        },
+                        "pieceName": "@puchoaistudio/tool-webhook",
+                        "actionName": "return_response",
+                        "sampleData": {},
+                        "pieceVersion": "^2.0.4",
+                        "propertySettings": {
+                          "fields": {
+                            "type": "MANUAL",
+                            "schema": {
+                              "body": {
+                                "type": "JSON",
+                                "required": true,
+                                "displayName": "JSON Body"
+                              },
+                              "status": {
+                                "type": "NUMBER",
+                                "required": false,
+                                "displayName": "Status",
+                                "defaultValue": 200
+                              },
+                              "headers": {
+                                "type": "OBJECT",
+                                "required": false,
+                                "displayName": "Headers"
+                              }
+                            }
+                          },
+                          "respond": {
+                            "type": "MANUAL"
+                          },
+                          "responseType": {
+                            "type": "MANUAL"
+                          }
+                        },
+                        "errorHandlingOptions": {
+                          "retryOnFailure": {
+                            "value": false
+                          },
+                          "continueOnFailure": {
+                            "value": false
+                          }
+                        }
+                      },
+                      "displayName": "Return raise: Invoice_ID, row"
+                    },
+                    "displayName": "Update agreements (same call): Agreement_ID, Tenant_Name, Tenant_State, Centre, Unit, Monthly_Amount +8 more"
+                  },
+                  "displayName": "Build the agreements patch (CODE — same call)"
+                },
+                "displayName": "Insert sales_invoices: Prepared_At, Agreement_ID, Tenant_Name, Tenant_State, Centre, Period +11 more (Invoice_ID numbered by the app)"
+              },
+              "displayName": "Build the row from the payload (CODE)"
+            },
+            {
+              "name": "step_unknown_action",
+              "skip": false,
+              "type": "PIECE",
+              "valid": true,
+              "settings": {
+                "input": {
+                  "fields": {
+                    "body": {
+                      "ok": "false",
+                      "error": "unknown action",
+                      "action": "{{trigger['body']['action']}}",
+                      "known": [
+                        "raise"
+                      ]
+                    },
+                    "status": 400,
+                    "headers": {}
+                  },
+                  "respond": "stop",
+                  "responseType": "json"
+                },
+                "pieceName": "@puchoaistudio/tool-webhook",
+                "actionName": "return_response",
+                "sampleData": {},
+                "pieceVersion": "^2.0.4",
+                "propertySettings": {
+                  "fields": {
+                    "type": "MANUAL",
+                    "schema": {
+                      "body": {
+                        "type": "JSON",
+                        "required": true,
+                        "displayName": "JSON Body"
+                      },
+                      "status": {
+                        "type": "NUMBER",
+                        "required": false,
+                        "displayName": "Status",
+                        "defaultValue": 200
+                      },
+                      "headers": {
+                        "type": "OBJECT",
+                        "required": false,
+                        "displayName": "Headers"
+                      }
+                    }
+                  },
+                  "respond": {
+                    "type": "MANUAL"
+                  },
+                  "responseType": {
+                    "type": "MANUAL"
+                  }
+                },
+                "errorHandlingOptions": {
+                  "retryOnFailure": {
+                    "value": false
+                  },
+                  "continueOnFailure": {
+                    "value": false
+                  }
+                }
+              },
+              "displayName": "Return 400 unknown action"
+            }
+          ],
+          "settings": {
+            "branches": [
+              {
+                "branchName": "raise",
+                "branchType": "CONDITION",
+                "conditions": [
+                  [
+                    {
+                      "operator": "TEXT_EXACTLY_MATCHES",
+                      "firstValue": "{{trigger['body']['action']}}",
+                      "secondValue": "raise",
+                      "caseSensitive": false
+                    }
+                  ]
+                ]
+              },
+              {
+                "branchName": "unknown action",
+                "branchType": "FALLBACK"
+              }
+            ],
+            "sampleData": {},
+            "executionType": "EXECUTE_FIRST_MATCH"
+          },
+          "displayName": "Route by action"
+        },
+        "displayName": "Constants"
+      }
+    },
+    "valid": true,
+    "agentIds": [],
+    "connectionIds": [],
+    "schemaVersion": "7"
+  },
+  "blogUrl": ""
+}
