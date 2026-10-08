@@ -18,5 +18,13 @@ for (const f of ['.env.local', '.env']) {
 }
 process.env.HOSTNAME ??= '127.0.0.1'; process.env.PORT ??= '3000';
 console.log(`standalone server → http://${process.env.HOSTNAME}:${process.env.PORT}  (DEMO_LOGINS=${process.env.DEMO_LOGINS ?? 'unset'})`);
+// `localhost` resolves to ::1 first on Windows 11, but the server binds 127.0.0.1 (never the LAN — DEMO_LOGINS). Relay the IPv6
+// loopback to it so http://localhost:<port> works in every browser. Loopback only; nothing leaves the machine.
+if (process.env.HOSTNAME === '127.0.0.1') {
+  const net = await import('node:net');
+  net.createServer((c) => { const u = net.connect(Number(process.env.PORT), '127.0.0.1'); c.pipe(u).pipe(c); u.on('error', () => c.destroy()); c.on('error', () => u.destroy()); })
+    .on('error', (e) => console.log(`(IPv6 loopback relay not started: ${e.code})`))
+    .listen(Number(process.env.PORT), '::1');
+}
 process.chdir(serverDir);
 await import(pathToFileURL(path.join(serverDir, 'server.js')).href);
