@@ -1,0 +1,577 @@
+# os.yaml — Sonic Group · Expense & Income OS (clickable demo, v1)
+# Source: MoM "Sonic Group Expense & Income Automation", 06 Oct 2026 (Mugdha Borate — Sonic Group; Jainam, Damini — Pucho).
+# Card: docs/sonic-group-problem-card.md · intake: docs/00-intake.md · ⚑ = assumption to confirm with the client.
+# Shape: a four-stage approval chain (Centre → HO → Director → Accounts) is the app's own CRUD (rule zero, `direct: patch`);
+# the AI reads the bill photo (BILL_READ); the Tally import XML is built by code in the app (src/custom/TallyExport);
+# a sales invoice is raised from an agreement one day before its due date (SALES_INVOICE).
+os:
+  name: Sonic Bills & Income
+  slug: sonic-group-os
+  client: Sonic Group
+  mode: client
+  one_liner: A centre coordinator photographs an expense bill, AI reads the GST and the narration, the bill is approved by HO, the Director and Accounts online, and Accounts imports it into Tally Prime from one XML — sales invoices from the agreements arrive the day before they are due.
+  tagline: Every bill from every centre — approved online, ready for Tally.
+  languages: [en]
+  volume_per_month: 300                    # ⚑ expense bills / month across all centres (not stated in the MoM)
+  success_metric: The Director sees every bill online by day and by vendor, and no bill waits for a hard-copy signature
+  plan: team
+  audit: true                              # who approved what, when — server-side, from the session (the approval trail)
+  auth_otp: false                          # no mail flow in the demo; password sign-in only
+  brand: { color: "#0F766E", name: Sonic Group }
+
+design:
+  shell: sidebar
+  tone: graphite
+  canvas: paper
+  direction: "Calm and ledger-like: centre coordinators on phones, HO, the Director and Accounts on laptops; one teal accent, colour only for status."
+  sidebar: { style: light, footer: profile }
+
+requirements:
+  - { id: R1,  text: "A Centre Coordinator takes a photo of an expense bill on their mobile and uploads it to the application" }
+  - { id: R2,  text: "A Centre Coordinator reads the bill data filled in by AI from the photo — vendor, GST, GST rates and narration" }
+  - { id: R3,  text: "Accounts sees each bill mapped to the vendor's Tally ledger name and the correct expense head from the mapping Mugdha provides" }
+  - { id: R4,  text: "A Centre Coordinator verifies and approves the bill as the first of four approval stages" }
+  - { id: R5,  text: "An HO Coordinator approves the bill after the centre" }
+  - { id: R6,  text: "The Director checks and approves the bill online" }
+  - { id: R7,  text: "Accounts does the finalisation of the approved bill" }
+  - { id: R8,  text: "The Director sees how many bills came on a particular day, sorted by day" }
+  - { id: R9,  text: "The Director sees every bill from one vendor since the start, categorised by vendor" }
+  - { id: R10, text: "An HO Coordinator flags a bill that seems incorrect and adds remarks" }
+  - { id: R11, text: "A Centre Coordinator replies to a raised query with the correction in the application" }
+  - { id: R12, text: "Accounts generates the Tally XML import file for an approved bill with one click" }
+  - { id: R13, text: "Accounts sees each Tally entry fall under the correct head with the GST split" }
+  - { id: R14, text: "Accounts records the agreements whose summaries Sonic Group provides" }
+  - { id: R15, text: "The Director sees the expected sales from the agreements" }
+  - { id: R16, text: "Accounts gets the sales invoice prepared one day before each agreement's due date" }
+  - { id: R17, text: "Accounts downloads the sales invoice as a Tally XML import file" }
+  - { id: R18, text: "Accounts maintains the vendor → ledger → expense-head mapping and maps an unmatched vendor once" }   # ⚑ inferred
+  - { id: R19, text: "A Centre Coordinator sees only their own centre's bills; HO, Director and Accounts see all centres" }   # ⚑ inferred
+  - { id: R20, text: "The Director sees one overview of bills pending at each stage, open queries and this month's expected sales" }   # ⚑ inferred
+
+role_groups:
+  head_office: [admin, ho, director, accounts]
+
+roles:
+  - { key: admin,    label: Admin,              desc: "Sees everything; maintains centres, vendor ledgers and people", pages: ["*"], home: /, demo: { email: admin@sonicgroup.pucho.ai, password: admin12345, name: Mugdha Borate } }
+  - { key: centre,   label: Centre Coordinator, desc: "Photographs and uploads the centre's bills, verifies what AI read, answers queries", pages: [my_bills, settings], home: /my-bills, scope: { bills: Centre_Coordinator }, demo: { email: centre@sonicgroup.pucho.ai, password: centre12345, name: Rohan Patil } }
+  - { key: ho,       label: HO Coordinator,     desc: "Approves bills from every centre after the centre, or raises a query", pages: [ho_approvals, bills, settings], home: /ho-approvals, demo: { email: ho@sonicgroup.pucho.ai, password: hocoord12345, name: Sneha Kulkarni } }
+  - { key: director, label: Director,           desc: "Approves bills online and sees every bill, query and the expected sales", pages: [overview, director_approvals, bills, income, settings], home: /, demo: { email: director@sonicgroup.pucho.ai, password: director12345, name: Anil Mehta } }
+  - { key: accounts, label: Accounts,           desc: "Finalises approved bills, keeps the vendor ledger mapping, raises sales invoices and exports to Tally", pages: [accounts_approvals, tally_export, bills, income, vendors, centres, settings], home: /accounts, demo: { email: accounts@sonicgroup.pucho.ai, password: accounts12345, name: Priya Joshi } }
+
+journeys:
+  - { role: centre,   does: "Upload a bill photo and send it to HO", lands: my_bills, steps: ["Tap Upload bill", "Take the photo and pick the centre — AI reads the bill", "Check the fields AI filled → Verify & send to HO"] }
+  - { role: centre,   does: "Answer a query on a bill", lands: my_bills, steps: ["The query sits at the top of My bills with its remarks", "Reply & resend — the correction goes back to the stage that asked"] }
+  - { role: ho,       does: "Approve or query the bills from the centres", lands: ho_approvals, steps: ["HO approvals opens on the waiting bills", "Approve — or Raise query with remarks"] }
+  - { role: director, does: "Approve the bills waiting for the Director", lands: overview, steps: ["Overview opens on Waiting for your approval", "Approve on the row — or open Approvals to raise a query"] }
+  - { role: director, does: "See the bills of one day or one vendor", lands: overview, steps: ["All bills", "Pick the day preset — or group by vendor"] }
+  - { role: accounts, does: "Finalise bills and import them into Tally", lands: accounts_approvals, steps: ["Finalise bills opens on the bills the Director approved", "Finalise — Tally ledger and expense head already filled", "Tally export → Download Tally XML (one click)"] }
+  - { role: accounts, does: "Raise tomorrow's sales invoices", lands: income, steps: ["Agreements & sales opens on Due tomorrow", "Raise invoice on the row", "Tally export → Download Tally XML"] }
+  - { role: admin,    does: "Add a centre and its coordinator", lands: overview, steps: ["Setup → Centres → Add centre", "Users & roles → add the coordinator"] }
+
+metrics:
+  at_centre:       { entity: bills, label: To verify at centre, where: "Status=At Centre", tone: warn, icon: Camera }
+  with_ho:         { entity: bills, label: Waiting with HO, where: "Status=With HO", tone: info, icon: Building2 }
+  with_director:   { entity: bills, label: Waiting for Director, where: "Status=With Director", tone: warn, icon: Stamp }
+  with_accounts:   { entity: bills, label: Waiting with Accounts, where: "Status=With Accounts", tone: info, icon: Calculator }
+  open_queries:    { entity: bills, label: Open queries, where: "Status=Query", tone: bad, icon: MessageSquareWarning }
+  unmapped:        { entity: bills, label: Vendor not mapped, where: "Tally_Ledger is empty and Status not in [Cancelled, Exported]", tone: warn, icon: Link2Off }
+  bills_today:     { entity: bills, label: Bills today, where: "Uploaded_At=today", icon: Receipt }
+  bills_month:     { entity: bills, label: Bills this month, where: "Uploaded_At in month and Status!=Cancelled", icon: Receipt }
+  bills_value:     { entity: bills, label: Bill value this month, where: "Uploaded_At in month and Status!=Cancelled", sum: Total_Amount, format: money, icon: IndianRupee }
+  ready_tally:     { entity: bills, label: Bills ready for Tally, where: "Status=Finalised", tone: ok, icon: FileDown }
+  exported_month:  { entity: bills, label: Exported this month, where: "Status=Exported and Exported_At in month", tone: ok, icon: CheckCircle2 }
+  invoices_ready:  { entity: sales_invoices, label: Sales invoices ready, where: "Status=Prepared", tone: ok, icon: FileDown }
+  expected_sales:  { entity: agreements, label: Expected sales / month, where: "Status=Active", sum: Monthly_Total, format: money, icon: TrendingUp }
+  active_agreements: { entity: agreements, label: Active agreements, where: "Status=Active", icon: FileSignature }
+  due_tomorrow:    { entity: agreements, label: Due tomorrow, where: "Next_Due_Date<=today+1 and Invoice_Status!=Raised and Status=Active", tone: warn, icon: CalendarClock }
+  ending_soon:     { entity: agreements, label: Ending in 60 days, where: "End_Date<=today+60 and End_Date>=today and Status=Active", tone: warn, icon: CalendarX }
+
+entities:
+  - name: bills
+    id: { column: Bill_ID, prefix: "B-" }
+    created: Uploaded_At
+    title: Vendor_Name
+    subtitle: [Centre, Bill_No]
+    owner: Centre_Coordinator
+    status: { column: Status, values: [At Centre, With HO, With Director, With Accounts, Query, Finalised, Exported, Cancelled] }
+    columns: [Bill_ID, Uploaded_At, Centre, Centre_Coordinator, Bill_Photo, Vendor_Name, Vendor_GSTIN, Bill_No, Bill_Date, Taxable_Value, GST_Rate, CGST, SGST, IGST, Total_Amount, Narration, Tally_Ledger, Expense_Head, AI_Confidence, Status, Query_From, Query_Remarks, Query_Reply, Accounts_Remarks, Exported_At]
+    seed: 0
+    examples:
+      - { Bill_ID: B-2026-0141, Uploaded_At: "2026-10-08T10:20:00+05:30", Centre: Pune — Baner, Centre_Coordinator: Rohan Patil, Bill_Photo: "", Vendor_Name: Shree Electricals, Vendor_GSTIN: 27AAKFS4471M1Z2, Bill_No: SE/2026/884, Bill_Date: "2026-10-07", Taxable_Value: 18400, GST_Rate: 18, CGST: 1656, SGST: 1656, IGST: 0, Total_Amount: 21712, Narration: "Replacement of DB panel MCBs and wiring, 2nd floor common area", Tally_Ledger: Shree Electricals - Pune, Expense_Head: Electrical Repairs, AI_Confidence: 0.94, Status: At Centre }
+      - { Bill_ID: B-2026-0140, Uploaded_At: "2026-10-08T09:05:00+05:30", Centre: Pune — Baner, Centre_Coordinator: Rohan Patil, Bill_Photo: "", Vendor_Name: Office Mart Stationers, Vendor_GSTIN: 27ABCPO2210L1Z8, Bill_No: OM-5521, Bill_Date: "2026-10-06", Taxable_Value: 3250, GST_Rate: 12, CGST: 195, SGST: 195, IGST: 0, Total_Amount: 3640, Narration: "Printer cartridges and A4 paper for the centre office", Tally_Ledger: Office Mart Stationers, Expense_Head: Printing & Stationery, AI_Confidence: 0.91, Status: At Centre }
+      - { Bill_ID: B-2026-0139, Uploaded_At: "2026-10-07T16:40:00+05:30", Centre: Bengaluru — Whitefield, Centre_Coordinator: Kiran Rao, Bill_Photo: "", Vendor_Name: XYZ Private Limited, Vendor_GSTIN: 29AAACX1234K1Z5, Bill_No: XYZ/BLR/2210, Bill_Date: "2026-10-05", Taxable_Value: 42000, GST_Rate: 18, CGST: 3780, SGST: 3780, IGST: 0, Total_Amount: 49560, Narration: "Quarterly AMC — HVAC units, Whitefield centre", Tally_Ledger: XYZ Private Limited Bangalore, Expense_Head: Repairs & Maintenance, AI_Confidence: 0.88, Status: With HO }
+      - { Bill_ID: B-2026-0138, Uploaded_At: "2026-10-07T12:15:00+05:30", Centre: Mumbai — Andheri, Centre_Coordinator: Farah Shaikh, Bill_Photo: "", Vendor_Name: Clean Pro Facility Services, Vendor_GSTIN: 27AAGFC8890Q1Z1, Bill_No: CP/MUM/0912, Bill_Date: "2026-10-01", Taxable_Value: 36500, GST_Rate: 18, CGST: 3285, SGST: 3285, IGST: 0, Total_Amount: 43070, Narration: "Housekeeping services for September 2026 — 6 staff", Tally_Ledger: Clean Pro Facility Services, Expense_Head: Housekeeping Charges, AI_Confidence: 0.96, Status: With HO }
+      - { Bill_ID: B-2026-0137, Uploaded_At: "2026-10-06T11:30:00+05:30", Centre: Nagpur — Sitabuldi, Centre_Coordinator: Amol Deshmukh, Bill_Photo: "", Vendor_Name: Secure Guard Services, Vendor_GSTIN: 27AAJFS5512R1Z4, Bill_No: SGS/NGP/447, Bill_Date: "2026-10-01", Taxable_Value: 52000, GST_Rate: 18, CGST: 4680, SGST: 4680, IGST: 0, Total_Amount: 61360, Narration: "Security guards for September 2026 — 4 guards, 3 shifts", Tally_Ledger: Secure Guard Services Nagpur, Expense_Head: Security Charges, AI_Confidence: 0.93, Status: With Director }
+      - { Bill_ID: B-2026-0136, Uploaded_At: "2026-10-06T10:10:00+05:30", Centre: Mumbai — Andheri, Centre_Coordinator: Farah Shaikh, Bill_Photo: "", Vendor_Name: Interior Craft Fit-outs, Vendor_GSTIN: 27AAECI7781H1Z6, Bill_No: ICF/26-27/118, Bill_Date: "2026-10-03", Taxable_Value: 285000, GST_Rate: 18, CGST: 25650, SGST: 25650, IGST: 0, Total_Amount: 336300, Narration: "Fit-out work Unit 4B — partitions, false ceiling, running bill 2", Tally_Ledger: Interior Craft Fit-outs, Expense_Head: Fit-out Expenses, AI_Confidence: 0.86, Status: With Director }
+      - { Bill_ID: B-2026-0135, Uploaded_At: "2026-10-05T15:45:00+05:30", Centre: Pune — Baner, Centre_Coordinator: Rohan Patil, Bill_Photo: "", Vendor_Name: XYZ Private Limited, Vendor_GSTIN: 27AAACX1234K1Z9, Bill_No: XYZ/PUN/0871, Bill_Date: "2026-10-04", Taxable_Value: 15500, GST_Rate: 18, CGST: 1395, SGST: 1395, IGST: 0, Total_Amount: 18290, Narration: "Lift breakdown call — motor coupling replaced", Tally_Ledger: XYZ Private Limited Pune, Expense_Head: Repairs & Maintenance, AI_Confidence: 0.9, Status: Query, Query_From: HO, Query_Remarks: "Bill date and job card date do not match — attach the job card or confirm the date" }
+      - { Bill_ID: B-2026-0134, Uploaded_At: "2026-10-04T13:20:00+05:30", Centre: Hyderabad — Madhapur, Centre_Coordinator: Sai Teja, Bill_Photo: "", Vendor_Name: Deccan Plumbing Works, Vendor_GSTIN: 36AAHFD3321P1Z0, Bill_No: DPW-3390, Bill_Date: "2026-10-02", Taxable_Value: 9800, GST_Rate: 18, CGST: 882, SGST: 882, IGST: 0, Total_Amount: 11564, Narration: "Washroom plumbing repairs, ground floor", Tally_Ledger: "", Expense_Head: Repairs & Maintenance, AI_Confidence: 0.72, Status: With Accounts }
+      - { Bill_ID: B-2026-0133, Uploaded_At: "2026-10-03T10:00:00+05:30", Centre: Bengaluru — Whitefield, Centre_Coordinator: Kiran Rao, Bill_Photo: "", Vendor_Name: Bescom Power Supply, Vendor_GSTIN: "", Bill_No: "7712093344", Bill_Date: "2026-10-01", Taxable_Value: 128400, GST_Rate: 0, CGST: 0, SGST: 0, IGST: 0, Total_Amount: 128400, Narration: "Electricity bill September 2026 — common area meter", Tally_Ledger: BESCOM Whitefield, Expense_Head: Electricity Charges, AI_Confidence: 0.97, Status: With Accounts }
+      - { Bill_ID: B-2026-0132, Uploaded_At: "2026-10-02T17:10:00+05:30", Centre: Nagpur — Sitabuldi, Centre_Coordinator: Amol Deshmukh, Bill_Photo: "", Vendor_Name: Office Mart Stationers, Vendor_GSTIN: 27ABCPO2210L1Z8, Bill_No: OM-5480, Bill_Date: "2026-09-30", Taxable_Value: 2100, GST_Rate: 12, CGST: 126, SGST: 126, IGST: 0, Total_Amount: 2352, Narration: "Visitor register books and files", Tally_Ledger: Office Mart Stationers, Expense_Head: Printing & Stationery, AI_Confidence: 0.92, Status: Finalised, Accounts_Remarks: "OK" }
+      - { Bill_ID: B-2026-0131, Uploaded_At: "2026-10-01T12:40:00+05:30", Centre: Mumbai — Andheri, Centre_Coordinator: Farah Shaikh, Bill_Photo: "", Vendor_Name: Shree Electricals, Vendor_GSTIN: 27AAKFS4471M1Z2, Bill_No: SE/2026/851, Bill_Date: "2026-09-29", Taxable_Value: 7600, GST_Rate: 18, CGST: 684, SGST: 684, IGST: 0, Total_Amount: 8968, Narration: "LED tube lights and fittings, parking level", Tally_Ledger: Shree Electricals - Pune, Expense_Head: Electrical Repairs, AI_Confidence: 0.95, Status: Finalised }
+      - { Bill_ID: B-2026-0130, Uploaded_At: "2026-09-30T11:00:00+05:30", Centre: Bengaluru — Whitefield, Centre_Coordinator: Kiran Rao, Bill_Photo: "", Vendor_Name: XYZ Private Limited, Vendor_GSTIN: 29AAACX1234K1Z5, Bill_No: XYZ/BLR/2188, Bill_Date: "2026-09-28", Taxable_Value: 12800, GST_Rate: 18, CGST: 1152, SGST: 1152, IGST: 0, Total_Amount: 15104, Narration: "DG set servicing — Whitefield centre", Tally_Ledger: XYZ Private Limited Bangalore, Expense_Head: Repairs & Maintenance, AI_Confidence: 0.9, Status: Exported, Exported_At: "2026-10-02T18:00:00+05:30" }
+      - { Bill_ID: B-2026-0129, Uploaded_At: "2026-09-29T09:30:00+05:30", Centre: Hyderabad — Madhapur, Centre_Coordinator: Sai Teja, Bill_Photo: "", Vendor_Name: Interior Craft Fit-outs, Vendor_GSTIN: 27AAECI7781H1Z6, Bill_No: ICF/26-27/109, Bill_Date: "2026-09-26", Taxable_Value: 164000, GST_Rate: 18, CGST: 0, SGST: 0, IGST: 29520, Total_Amount: 193520, Narration: "Fit-out work Unit 2A — flooring and electrical, running bill 1 (inter-state)", Tally_Ledger: Interior Craft Fit-outs, Expense_Head: Fit-out Expenses, AI_Confidence: 0.84, Status: Exported, Exported_At: "2026-10-02T18:00:00+05:30" }
+      - { Bill_ID: B-2026-0128, Uploaded_At: "2026-09-28T14:00:00+05:30", Centre: Pune — Baner, Centre_Coordinator: Rohan Patil, Bill_Photo: "", Vendor_Name: Clean Pro Facility Services, Vendor_GSTIN: 27AAGFC8890Q1Z1, Bill_No: CP/PUN/0904, Bill_Date: "2026-09-27", Taxable_Value: 24000, GST_Rate: 18, CGST: 2160, SGST: 2160, IGST: 0, Total_Amount: 28320, Narration: "Deep cleaning — Baner centre common areas", Tally_Ledger: Clean Pro Facility Services, Expense_Head: Housekeeping Charges, AI_Confidence: 0.95, Status: Exported, Exported_At: "2026-10-02T18:00:00+05:30" }
+
+  - name: vendor_ledgers
+    id: { column: Map_ID, prefix: "VL-" }
+    title: Vendor_Name
+    subtitle: [Tally_Ledger]
+    status: { column: Status, values: [Active, Inactive] }
+    columns: [Map_ID, Vendor_Name, Vendor_GSTIN, City, Tally_Ledger, Expense_Head, Status]
+    seed: 0
+    examples:
+      - { Map_ID: VL-001, Vendor_Name: XYZ Private Limited, Vendor_GSTIN: 29AAACX1234K1Z5, City: Bengaluru, Tally_Ledger: XYZ Private Limited Bangalore, Expense_Head: Repairs & Maintenance, Status: Active }
+      - { Map_ID: VL-002, Vendor_Name: XYZ Private Limited, Vendor_GSTIN: 27AAACX1234K1Z9, City: Pune, Tally_Ledger: XYZ Private Limited Pune, Expense_Head: Repairs & Maintenance, Status: Active }
+      - { Map_ID: VL-003, Vendor_Name: Shree Electricals, Vendor_GSTIN: 27AAKFS4471M1Z2, City: Pune, Tally_Ledger: Shree Electricals - Pune, Expense_Head: Electrical Repairs, Status: Active }
+      - { Map_ID: VL-004, Vendor_Name: Clean Pro Facility Services, Vendor_GSTIN: 27AAGFC8890Q1Z1, City: Mumbai, Tally_Ledger: Clean Pro Facility Services, Expense_Head: Housekeeping Charges, Status: Active }
+      - { Map_ID: VL-005, Vendor_Name: Secure Guard Services, Vendor_GSTIN: 27AAJFS5512R1Z4, City: Nagpur, Tally_Ledger: Secure Guard Services Nagpur, Expense_Head: Security Charges, Status: Active }
+      - { Map_ID: VL-006, Vendor_Name: Interior Craft Fit-outs, Vendor_GSTIN: 27AAECI7781H1Z6, City: Mumbai, Tally_Ledger: Interior Craft Fit-outs, Expense_Head: Fit-out Expenses, Status: Active }
+      - { Map_ID: VL-007, Vendor_Name: Office Mart Stationers, Vendor_GSTIN: 27ABCPO2210L1Z8, City: Pune, Tally_Ledger: Office Mart Stationers, Expense_Head: Printing & Stationery, Status: Active }
+      - { Map_ID: VL-008, Vendor_Name: Bescom Power Supply, Vendor_GSTIN: "", City: Bengaluru, Tally_Ledger: BESCOM Whitefield, Expense_Head: Electricity Charges, Status: Active }
+
+  - name: centres
+    id: { column: Centre_ID, prefix: "CEN-" }
+    title: Centre_Name
+    subtitle: [City, State]
+    owner: Coordinator
+    contact: { phone: Phone, whatsapp: Phone }
+    status: { column: Status, values: [Active, Inactive] }
+    columns: [Centre_ID, Centre_Name, City, State, Coordinator, Phone, Status]
+    seed: 0
+    examples:
+      - { Centre_ID: CEN-01, Centre_Name: Pune — Baner, City: Pune, State: Maharashtra, Coordinator: Rohan Patil, Phone: "+919822011001", Status: Active }
+      - { Centre_ID: CEN-02, Centre_Name: Mumbai — Andheri, City: Mumbai, State: Maharashtra, Coordinator: Farah Shaikh, Phone: "+919820011002", Status: Active }
+      - { Centre_ID: CEN-03, Centre_Name: Nagpur — Sitabuldi, City: Nagpur, State: Maharashtra, Coordinator: Amol Deshmukh, Phone: "+919823011003", Status: Active }
+      - { Centre_ID: CEN-04, Centre_Name: Bengaluru — Whitefield, City: Bengaluru, State: Karnataka, Coordinator: Kiran Rao, Phone: "+919845011004", Status: Active }
+      - { Centre_ID: CEN-05, Centre_Name: Hyderabad — Madhapur, City: Hyderabad, State: Telangana, Coordinator: Sai Teja, Phone: "+919849011005", Status: Active }
+
+  - name: agreements
+    id: { column: Agreement_ID, prefix: "AG-" }
+    created: Created_At
+    title: Tenant_Name
+    subtitle: [Centre, Unit]
+    due: { column: Next_Due_Date, closed: "Status in [Ended, On Hold]" }
+    status: { column: Status, values: [Active, On Hold, Ended] }
+    columns: [Agreement_ID, Created_At, Tenant_Name, Tenant_GSTIN, Tenant_State, Centre, Unit, Agreement_Type, Start_Date, End_Date, Monthly_Amount, GST_Rate, GST_Amount, Monthly_Total, Due_Day, Next_Due_Date, Tenant_Ledger, Income_Head, Invoice_Status, Status]
+    seed: 0
+    examples:
+      - { Agreement_ID: AG-2026-014, Created_At: "2026-10-08T09:00:00+05:30", Tenant_Name: Nexa Analytics Pvt Ltd, Tenant_GSTIN: 27AAFCN1180D1Z3, Tenant_State: Maharashtra, Centre: Pune — Baner, Unit: "3rd floor, Wing A (4,200 sq ft)", Agreement_Type: Rent, Start_Date: "2025-04-01", End_Date: "2028-03-31", Monthly_Amount: 420000, GST_Rate: 18, GST_Amount: 75600, Monthly_Total: 495600, Due_Day: 9, Next_Due_Date: "2026-10-09", Tenant_Ledger: Nexa Analytics Pvt Ltd, Income_Head: Rent Income, Invoice_Status: Upcoming, Status: Active }
+      - { Agreement_ID: AG-2026-013, Created_At: "2026-09-20T09:00:00+05:30", Tenant_Name: Brightpath Learning LLP, Tenant_GSTIN: 27AAQFB2231K1Z7, Tenant_State: Maharashtra, Centre: Mumbai — Andheri, Unit: "Unit 4B (2,800 sq ft)", Agreement_Type: Rent + Fit-out, Start_Date: "2026-09-01", End_Date: "2029-08-31", Monthly_Amount: 336000, GST_Rate: 18, GST_Amount: 60480, Monthly_Total: 396480, Due_Day: 9, Next_Due_Date: "2026-10-09", Tenant_Ledger: Brightpath Learning LLP, Income_Head: Rent Income, Invoice_Status: Upcoming, Status: Active }
+      - { Agreement_ID: AG-2026-012, Created_At: "2026-08-14T09:00:00+05:30", Tenant_Name: Kaveri Foods Pvt Ltd, Tenant_GSTIN: 29AABCK7712M1Z1, Tenant_State: Karnataka, Centre: Bengaluru — Whitefield, Unit: "Ground floor retail (1,600 sq ft)", Agreement_Type: Rent, Start_Date: "2026-01-01", End_Date: "2026-12-31", Monthly_Amount: 210000, GST_Rate: 18, GST_Amount: 37800, Monthly_Total: 247800, Due_Day: 5, Next_Due_Date: "2026-11-05", Tenant_Ledger: Kaveri Foods Pvt Ltd, Income_Head: Rent Income, Invoice_Status: Raised, Status: Active }
+      - { Agreement_ID: AG-2026-011, Created_At: "2026-07-02T09:00:00+05:30", Tenant_Name: Orbit Fintech Solutions, Tenant_GSTIN: 36AAGCO4410F1Z5, Tenant_State: Telangana, Centre: Hyderabad — Madhapur, Unit: "Unit 2A (3,100 sq ft)", Agreement_Type: Fit-out, Start_Date: "2026-08-01", End_Date: "2026-11-30", Monthly_Amount: 275000, GST_Rate: 18, GST_Amount: 49500, Monthly_Total: 324500, Due_Day: 15, Next_Due_Date: "2026-10-15", Tenant_Ledger: Orbit Fintech Solutions, Income_Head: Fit-out Income, Invoice_Status: Upcoming, Status: Active }
+      - { Agreement_ID: AG-2026-010, Created_At: "2026-05-11T09:00:00+05:30", Tenant_Name: Vidarbha Diagnostics, Tenant_GSTIN: 27AAEFV5523C1Z2, Tenant_State: Maharashtra, Centre: Nagpur — Sitabuldi, Unit: "1st floor (2,000 sq ft)", Agreement_Type: Rent, Start_Date: "2024-06-01", End_Date: "2026-11-30", Monthly_Amount: 160000, GST_Rate: 18, GST_Amount: 28800, Monthly_Total: 188800, Due_Day: 1, Next_Due_Date: "2026-11-01", Tenant_Ledger: Vidarbha Diagnostics, Income_Head: Rent Income, Invoice_Status: Raised, Status: Active }
+      - { Agreement_ID: AG-2026-009, Created_At: "2026-03-18T09:00:00+05:30", Tenant_Name: Sahyadri Co-work, Tenant_GSTIN: 27AAKFS9981B1Z4, Tenant_State: Maharashtra, Centre: Pune — Baner, Unit: "4th floor (5,000 sq ft)", Agreement_Type: Rent, Start_Date: "2023-04-01", End_Date: "2026-09-30", Monthly_Amount: 450000, GST_Rate: 18, GST_Amount: 81000, Monthly_Total: 531000, Due_Day: 1, Next_Due_Date: "2026-10-01", Tenant_Ledger: Sahyadri Co-work, Income_Head: Rent Income, Invoice_Status: Raised, Status: Ended }
+
+  - name: sales_invoices
+    id: { column: Invoice_ID, prefix: "SI-" }
+    created: Prepared_At
+    title: Tenant_Name
+    subtitle: [Centre, Period]
+    due: { column: Due_Date, closed: "Status in [Exported]" }
+    status: { column: Status, values: [Prepared, Exported] }
+    columns: [Invoice_ID, Prepared_At, Agreement_ID, Tenant_Name, Tenant_State, Centre, Period, Due_Date, Taxable_Value, GST_Rate, GST_Amount, Total_Amount, Tenant_Ledger, Income_Head, Narration, Status, Exported_At]
+    seed: 0
+    examples:
+      - { Invoice_ID: SI-2026-0058, Prepared_At: "2026-10-04T09:00:00+05:30", Agreement_ID: AG-2026-012, Tenant_Name: Kaveri Foods Pvt Ltd, Tenant_State: Karnataka, Centre: Bengaluru — Whitefield, Period: Oct 2026, Due_Date: "2026-10-05", Taxable_Value: 210000, GST_Rate: 18, GST_Amount: 37800, Total_Amount: 247800, Tenant_Ledger: Kaveri Foods Pvt Ltd, Income_Head: Rent Income, Narration: "Rent for October 2026 — Ground floor retail, Whitefield", Status: Prepared }
+      - { Invoice_ID: SI-2026-0057, Prepared_At: "2026-09-30T09:00:00+05:30", Agreement_ID: AG-2026-010, Tenant_Name: Vidarbha Diagnostics, Tenant_State: Maharashtra, Centre: Nagpur — Sitabuldi, Period: Oct 2026, Due_Date: "2026-10-01", Taxable_Value: 160000, GST_Rate: 18, GST_Amount: 28800, Total_Amount: 188800, Tenant_Ledger: Vidarbha Diagnostics, Income_Head: Rent Income, Narration: "Rent for October 2026 — 1st floor, Sitabuldi", Status: Exported, Exported_At: "2026-10-01T11:00:00+05:30" }
+      - { Invoice_ID: SI-2026-0056, Prepared_At: "2026-09-30T09:00:00+05:30", Agreement_ID: AG-2026-009, Tenant_Name: Sahyadri Co-work, Tenant_State: Maharashtra, Centre: Pune — Baner, Period: Sep 2026 (final), Due_Date: "2026-10-01", Taxable_Value: 450000, GST_Rate: 18, GST_Amount: 81000, Total_Amount: 531000, Tenant_Ledger: Sahyadri Co-work, Income_Head: Rent Income, Narration: "Rent — final month of agreement, 4th floor Baner", Status: Exported, Exported_At: "2026-10-01T11:00:00+05:30" }
+
+header:
+  covers: [R8, R9]
+  search:
+    - { label: Bills, entity: bills, columns: [Bill_ID, Vendor_Name, Bill_No, Centre], title: Vendor_Name, subtitle: [Bill_No, Status], link: /bills, page: bills }
+    - { label: Agreements, entity: agreements, columns: [Agreement_ID, Tenant_Name, Centre], title: Tenant_Name, subtitle: [Centre, Status], link: /income, page: income }
+  notifications:
+    - { metric: with_director, title: Vendor_Name, subtitle: [Centre], date: Uploaded_At, link: /director-approvals, page: director_approvals }
+    - { metric: open_queries, title: Vendor_Name, subtitle: [Query_From, Centre], date: Uploaded_At, link: /bills, page: bills }
+    - { metric: due_tomorrow, title: Tenant_Name, subtitle: [Centre], date: Next_Due_Date, link: /income, page: income }
+
+flows:
+  - name: BILL_READ
+    covers: [R1, R2, R3]
+    desc: Reads a bill photo — vendor, bill no, date, GST rate and split, total, narration — and proposes the Tally ledger and expense head
+    trigger: { tool: webhook, name: catch_webhook, auth: none }
+    constants: { rows_from: [vendor_ledgers] }
+    writes: [bills]
+    actions:
+      - name: extract
+        covers: [R1, R2, R3]
+        model: advanced
+        file: Bill_Photo
+        payload: { Bill_Photo: string, Centre: string }
+        prompt: |
+          You read one expense bill (a phone photo) for Sonic Group, a company that rents and fits out commercial spaces in India.
+          The bill was uploaded at the centre {{payload.Centre}}. Read exactly what is printed — never guess a number you cannot see.
+          Extract: the vendor name as printed, the vendor GSTIN, the bill number, the bill date (YYYY-MM-DD), the taxable value,
+          the GST rate in percent (if several rates are printed, the rate on the largest line), CGST, SGST and IGST amounts
+          (0 when absent), the bill total, and a one-line narration of what was bought or done, in plain English.
+          Then pick the matching row from Sonic Group's vendor ledger mapping by GSTIN first, then by vendor name and city:
+          {{constants.vendor_ledgers}}
+          Copy its Tally_Ledger and Expense_Head exactly; when no row matches, leave both empty.
+          Reply ONLY with JSON: {"Vendor_Name": "", "Vendor_GSTIN": "", "Bill_No": "", "Bill_Date": "", "Taxable_Value": 0, "GST_Rate": 0, "CGST": 0, "SGST": 0, "IGST": 0, "Total_Amount": 0, "Narration": "", "Tally_Ledger": "", "Expense_Head": "", "AI_Confidence": 0.0}
+        result: { Vendor_Name: string, Vendor_GSTIN: string, Bill_No: string, Bill_Date: string, Taxable_Value: number, GST_Rate: number, CGST: number, SGST: number, IGST: number, Total_Amount: number, Narration: string, Tally_Ledger: string, Expense_Head: string, AI_Confidence: number }
+        rules: ["Status starts as At Centre; the uploader is the Centre_Coordinator (from the session)", "Taxable_Value + CGST + SGST + IGST must equal Total_Amount within ₹1 — otherwise AI_Confidence is capped at 0.5 in code", "The app numbers the bill (B-YYYY-NNNN)"]
+        typical_seconds: 15
+        credits: 8
+        runs_per_month: 330
+        effect:
+          insert: bills
+          map: { user: Centre_Coordinator }
+          fill: { Status: At Centre, Uploaded_At: now }
+          result: { Vendor_Name: Shree Electricals, Vendor_GSTIN: 27AAKFS4471M1Z2, Bill_No: SE/2026/902, Bill_Date: "2026-10-08", Taxable_Value: 5400, GST_Rate: 18, CGST: 486, SGST: 486, IGST: 0, Total_Amount: 6372, Narration: "SIMULATED read — sample values; the AI reads the photo once BILL_READ is wired", Tally_Ledger: Shree Electricals - Pune, Expense_Head: Electrical Repairs, AI_Confidence: 0.5 }
+
+  - name: SALES_INVOICE
+    covers: [R16]
+    desc: Prepares the month's sales invoice from an agreement, the day before it is due
+    trigger: { tool: webhook, name: catch_webhook, auth: none }
+    writes: [sales_invoices, agreements]
+    actions:
+      - name: raise
+        covers: [R16]
+        model: none
+        payload: { Agreement_ID: string, Tenant_Name: string, Tenant_State: string, Centre: string, Unit: string, Next_Due_Date: string, Monthly_Amount: number, GST_Rate: number, GST_Amount: number, Monthly_Total: number, Tenant_Ledger: string, Income_Head: string }
+        result: { Invoice_ID: string }
+        rules: ["Period = the month of Next_Due_Date (code)", "Narration = Income_Head + ' for ' + Period + ' — ' + Unit (code)", "The app numbers the invoice (SI-YYYY-NNNN)", "Wired: CODE advances the agreement's Next_Due_Date by one month and sets Invoice_Status back to Upcoming; simulated: the agreement is marked Raised"]
+        typical_seconds: 5
+        credits: 5
+        runs_per_month: 40
+        effect:
+          insert: sales_invoices
+          map: { Next_Due_Date: Due_Date, Monthly_Amount: Taxable_Value, Monthly_Total: Total_Amount }
+          fill: { Status: Prepared, Prepared_At: now }
+          also: { patch: agreements, only: [Invoice_Status], fill: { Invoice_Status: Raised } }
+
+pages:
+  # ───────────── Director ─────────────
+  - id: overview
+    covers: [R6, R8, R9, R15, R20]
+    kind: overview
+    route: /
+    label: Overview
+    icon: LayoutDashboard
+    subtitle: Bills waiting at each stage, open queries and this month's expected sales
+    desc: What needs the Director today, then the month in numbers
+    greeting: Here is Sonic Group today.
+    roles: [admin, director]
+    quick_links: false
+    queues:
+      - { metric: with_director, action: approve_dir, action_label: Approve, sub: Centre, link: /director-approvals }
+      - { metric: open_queries, sub: Query_From, link: /bills }
+      - { metric: due_tomorrow, sub: Centre, link: /income }
+    kpis: [ { metric: bills_month }, { metric: bills_value }, { metric: open_queries }, { metric: expected_sales } ]
+    charts:
+      - { id: bills-by-day, type: trend, entity: bills, title: Bills by day, date: Uploaded_At, days: 30 }
+      - { id: bills-by-vendor, type: breakdown, entity: bills, title: Bill value by vendor, group: Vendor_Name, sum: Total_Amount, style: bar, layout: horizontal, limit: 8 }
+    recent: { entity: bills, columns: [Bill_ID, Vendor_Name, Centre, Total_Amount, Status], limit: 6, title: Latest bills, link: /bills }
+    modals:
+      - { id: approve_dir, covers: [R6], kind: status, title: Approve bill, entity: bills, direct: patch, context: { Status: With Accounts }, summary: [Vendor_Name, Bill_No, Total_Amount, Centre], submit: Approve, success: "Approved — sent to Accounts", fields: [] }
+
+  # ───────────── Centre Coordinator ─────────────
+  - id: my_bills
+    covers: [R1, R2, R4, R11, R19]
+    route: /my-bills
+    label: My bills
+    icon: Camera
+    subtitle: Photograph a bill, check what AI read, and answer queries from HO, the Director or Accounts
+    desc: The centre's bills — upload, verify, reply
+    entity: bills
+    roles: [admin, centre]
+    export: false
+    blocks:
+      - type: approvals
+        covers: [R2, R4, R11]
+        title: Needs you
+        empty: Nothing waiting — upload a new bill with Upload bill
+        sources:
+          - { entity: bills, label: Verify, icon: ScanLine, where: "Status=At Centre and Centre_Coordinator={{user}}", id: Bill_ID, title: Vendor_Name, summary: [Bill_No, Total_Amount, Expense_Head], date: Uploaded_At, status: Status,
+              approve: { direct: patch, context: { Status: With HO }, button: Verify & send to HO, title: Check what AI read, columns: 2, fields: [ { key: Vendor_Name, label: Vendor (as on the bill), type: text, required: true }, { key: Vendor_GSTIN, label: Vendor GSTIN, type: text }, { key: Bill_No, label: Bill no, type: text, required: true }, { key: Bill_Date, label: Bill date, type: date, required: true }, { key: Taxable_Value, label: Taxable value (₹), type: number, required: true }, { key: GST_Rate, label: GST rate (%), type: number }, { key: CGST, label: CGST (₹), type: number }, { key: SGST, label: SGST (₹), type: number }, { key: IGST, label: IGST (₹), type: number }, { key: Total_Amount, label: Bill total (₹), type: number, required: true }, { key: Narration, label: Narration, type: textarea, rows: 2 } ] },
+              reject:  { direct: patch, context: { Status: Cancelled }, button: Cancel bill, title: Cancel this bill, summary: [Vendor_Name, Bill_No], fields: [ { key: Query_Reply, label: Why (e.g. photo unclear — re-uploaded), type: textarea, rows: 2, required: true } ] } }
+          - { entity: bills, label: Query from HO, icon: MessageSquareWarning, where: "Status=Query and Query_From=HO and Centre_Coordinator={{user}}", id: Bill_ID, title: Vendor_Name, summary: [Query_Remarks, Bill_No], date: Uploaded_At, status: Status,
+              approve: { direct: patch, context: { Status: With HO }, button: Reply & resend, title: Reply to HO, summary: [Query_Remarks], fields: [ { key: Query_Reply, label: Your reply / correction, type: textarea, rows: 3, required: true }, { key: Bill_Date, label: Bill date, type: date }, { key: Total_Amount, label: Bill total (₹), type: number } ] },
+              reject:  { direct: patch, context: { Status: Cancelled }, button: Cancel bill, title: Cancel this bill, summary: [Vendor_Name, Bill_No], fields: [ { key: Query_Reply, label: Why, type: textarea, rows: 2, required: true } ] } }
+          - { entity: bills, label: Query from Director, icon: MessageSquareWarning, where: "Status=Query and Query_From=Director and Centre_Coordinator={{user}}", id: Bill_ID, title: Vendor_Name, summary: [Query_Remarks, Bill_No], date: Uploaded_At, status: Status,
+              approve: { direct: patch, context: { Status: With Director }, button: Reply & resend, title: Reply to the Director, summary: [Query_Remarks], fields: [ { key: Query_Reply, label: Your reply / correction, type: textarea, rows: 3, required: true }, { key: Total_Amount, label: Bill total (₹), type: number } ] },
+              reject:  { direct: patch, context: { Status: Cancelled }, button: Cancel bill, title: Cancel this bill, summary: [Vendor_Name, Bill_No], fields: [ { key: Query_Reply, label: Why, type: textarea, rows: 2, required: true } ] } }
+          - { entity: bills, label: Query from Accounts, icon: MessageSquareWarning, where: "Status=Query and Query_From=Accounts and Centre_Coordinator={{user}}", id: Bill_ID, title: Vendor_Name, summary: [Query_Remarks, Bill_No], date: Uploaded_At, status: Status,
+              approve: { direct: patch, context: { Status: With Accounts }, button: Reply & resend, title: Reply to Accounts, summary: [Query_Remarks], fields: [ { key: Query_Reply, label: Your reply / correction, type: textarea, rows: 3, required: true }, { key: Vendor_GSTIN, label: Vendor GSTIN, type: text }, { key: Total_Amount, label: Bill total (₹), type: number } ] },
+              reject:  { direct: patch, context: { Status: Cancelled }, button: Cancel bill, title: Cancel this bill, summary: [Vendor_Name, Bill_No], fields: [ { key: Query_Reply, label: Why, type: textarea, rows: 2, required: true } ] } }
+      - type: table
+        covers: [R19]
+        label: All my bills
+        where: "Centre_Coordinator={{user}}"
+        segments: { column: Status, all: All }
+        period: { column: Uploaded_At, presets: [today, 7d, 30d, all], default: all }
+        view: cards
+        views: [cards, table]
+        columns: [ { key: Vendor_Name, header: Vendor, type: text, sub: Bill_No }, { key: Bill_Date, header: Bill date, type: date }, { key: Total_Amount, header: Total, type: money }, { key: Status, type: badge }, { key: Bill_ID, type: id, priority: low } ]
+        search: [Vendor_Name, Bill_No, Bill_ID]
+        card: { title: Vendor_Name, subtitle: [Bill_No, Bill_Date], badge: Status, fields: [ { key: Total_Amount, label: Total, icon: IndianRupee }, { key: Expense_Head, label: Head, icon: Tag } ], callout: { column: Query_Remarks, label: Query, tone: warn } }
+        drawer: { title_column: Vendor_Name, sections: [ { type: tiles, title: Bill, columns: [Bill_No, Bill_Date, Centre, Status] }, { type: tiles, title: Amounts, columns: [Taxable_Value, GST_Rate, CGST, SGST, IGST, Total_Amount] }, { type: callout, column: Narration, title: Narration, tone: neutral }, { type: callout, column: Query_Remarks, title: Query, tone: warn }, { type: callout, column: Query_Reply, title: Your reply, tone: info }, { type: fields, title: Photo, columns: [Bill_Photo] } ] }
+        empty: { title: No bills yet, reason: "Bills you upload from this phone appear here and move to HO once you verify them.", action: upload_bill }
+        actions: { header: [upload_bill] }
+    modals:
+      - { id: upload_bill, covers: [R1, R2], kind: create, primary: true, title: Upload bill, intro: "Take a clear photo of the whole bill. AI reads the vendor, GST and narration — you check it next.", flow: BILL_READ, action: extract, submit: Read the bill, success: "Bill read — check it under Needs you", fields: [ { key: Bill_Photo, label: Bill photo, type: file, accept: "image/*,application/pdf", required: true }, { key: Centre, label: Centre, type: select, options_from: centres.Centre_Name, required: true } ] }
+
+  # ───────────── HO Coordinator ─────────────
+  - id: ho_approvals
+    covers: [R5, R10]
+    route: /ho-approvals
+    label: HO approvals
+    icon: Building2
+    subtitle: Bills every centre has verified — approve, or raise a query with remarks
+    desc: The HO Coordinator's stage
+    entity: bills
+    roles: [admin, ho]
+    badge: { entity: bills, where: "Status=With HO" }
+    blocks:
+      - type: kpis
+        kpis: [ { metric: with_ho }, { metric: open_queries }, { metric: at_centre }, { metric: bills_today } ]
+      - type: approvals
+        title: Waiting with HO
+        empty: No bill is waiting with HO
+        sources:
+          - { entity: bills, label: Bill, icon: Receipt, where: "Status=With HO", id: Bill_ID, title: Vendor_Name, summary: [Centre, Bill_No, Total_Amount, Expense_Head], date: Uploaded_At, status: Status,
+              approve: { direct: patch, context: { Status: With Director }, button: Approve, title: Approve — send to the Director, summary: [Vendor_Name, Bill_No, Total_Amount, Narration], fields: [] },
+              reject:  { direct: patch, context: { Status: Query, Query_From: HO }, button: Raise query, title: Raise a query to the centre, summary: [Vendor_Name, Bill_No, Centre], fields: [ { key: Query_Remarks, label: What is wrong with this bill, type: textarea, rows: 3, required: true } ] } }
+
+  # ───────────── Director ─────────────
+  - id: director_approvals
+    covers: [R6]
+    route: /director-approvals
+    label: Approvals
+    icon: Stamp
+    subtitle: Bills HO has approved — check and approve online, or raise a query
+    desc: The Director's stage
+    entity: bills
+    roles: [admin, director]
+    badge: { entity: bills, where: "Status=With Director" }
+    blocks:
+      - type: approvals
+        title: Waiting for the Director
+        layout: cards
+        empty: Nothing waits for the Director
+        sources:
+          - { entity: bills, label: Bill, icon: Receipt, where: "Status=With Director", id: Bill_ID, title: Vendor_Name, status: Status,
+              meta: [ { icon: MapPin, label: Centre, column: Centre }, { icon: Hash, label: Bill no, column: Bill_No }, { icon: IndianRupee, label: Total, column: Total_Amount }, { icon: Tag, label: Head, column: Expense_Head }, { icon: FileText, label: Narration, column: Narration } ],
+              approve: { direct: patch, context: { Status: With Accounts }, button: Approve, title: Approve — send to Accounts, summary: [Vendor_Name, Bill_No, Total_Amount], fields: [] },
+              reject:  { direct: patch, context: { Status: Query, Query_From: Director }, button: Raise query, title: Raise a query to the centre, summary: [Vendor_Name, Bill_No, Centre], fields: [ { key: Query_Remarks, label: Remarks, type: textarea, rows: 3, required: true } ] } }
+
+  # ───────────── Accounts ─────────────
+  - id: accounts_approvals
+    covers: [R3, R7, R13, R18]
+    route: /accounts
+    label: Finalise bills
+    icon: Calculator
+    subtitle: Bills the Director approved — confirm the Tally ledger and expense head, then finalise
+    desc: The Accounts stage
+    entity: bills
+    roles: [admin, accounts]
+    badge: { entity: bills, where: "Status=With Accounts" }
+    blocks:
+      - type: kpis
+        kpis: [ { metric: with_accounts }, { metric: unmapped, filter: "Tally_Ledger is empty and Status not in [Cancelled, Exported]" }, { metric: ready_tally }, { metric: exported_month } ]
+      - type: approvals
+        title: Waiting with Accounts
+        empty: Nothing to finalise
+        sources:
+          - { entity: bills, label: Bill, icon: Receipt, where: "Status=With Accounts", id: Bill_ID, title: Vendor_Name, summary: [Tally_Ledger, Expense_Head, Total_Amount], date: Uploaded_At, status: Status,
+              approve: { direct: patch, context: { Status: Finalised }, button: Finalise, title: Finalise for Tally, summary: [Vendor_Name, Vendor_GSTIN, Bill_No, Taxable_Value, CGST, SGST, IGST, Total_Amount], columns: 2, fields: [ { key: Tally_Ledger, label: Tally ledger (vendor), type: select, options_from: vendor_ledgers.Tally_Ledger, required: true }, { key: Expense_Head, label: Expense head, type: select, options_from: vendor_ledgers.Expense_Head, required: true }, { key: Accounts_Remarks, label: Remarks, type: textarea, rows: 2 } ] },
+              reject:  { direct: patch, context: { Status: Query, Query_From: Accounts }, button: Raise query, title: Raise a query to the centre, summary: [Vendor_Name, Bill_No, Centre], fields: [ { key: Query_Remarks, label: Remarks, type: textarea, rows: 3, required: true } ] } }
+
+  - id: tally_export
+    covers: [R12, R13, R17]
+    route: /tally-export
+    label: Tally export
+    icon: FileDown
+    subtitle: One click builds the Tally Prime import XML for every finalised bill and prepared sales invoice
+    desc: Purchase vouchers and sales vouchers for Tally Prime (Gateway → Import → Vouchers)
+    entity: bills
+    roles: [admin, accounts]
+    badge: { entity: bills, where: "Status=Finalised" }
+    blocks:
+      - type: kpis
+        kpis: [ { metric: ready_tally }, { metric: invoices_ready }, { metric: exported_month } ]
+      - { type: custom, name: TallyExport, covers: [R12, R13, R17] }
+      - type: tabs
+        tabs:
+          - label: Bills ready
+            blocks:
+              - type: table
+                where: "Status=Finalised"
+                columns: [ { key: Vendor_Name, header: Vendor, type: text, sub: Bill_No }, { key: Tally_Ledger, header: Tally ledger, type: text }, { key: Expense_Head, header: Head, type: tag }, { key: Taxable_Value, header: Taxable, type: money }, { key: Total_Amount, header: Total, type: money }, { key: Centre, priority: low } ]
+                search: [Vendor_Name, Bill_No, Tally_Ledger]
+                actions: { row: [mark_bill_exported] }
+          - label: Sales invoices ready
+            blocks:
+              - type: table
+                entity: sales_invoices
+                where: "Status=Prepared"
+                columns: [ { key: Tenant_Name, header: Tenant, type: text, sub: Period }, { key: Income_Head, header: Head, type: tag }, { key: Due_Date, header: Due, type: due }, { key: Taxable_Value, header: Taxable, type: money }, { key: Total_Amount, header: Total, type: money }, { key: Centre, priority: low } ]
+                search: [Tenant_Name, Invoice_ID]
+                actions: { row: [mark_invoice_exported] }
+          - label: Exported
+            blocks:
+              - type: table
+                where: "Status=Exported"
+                period: { column: Exported_At, presets: [7d, 30d, month, all], default: 30d }
+                columns: [ { key: Vendor_Name, header: Vendor, type: text, sub: Bill_No }, { key: Tally_Ledger, header: Tally ledger, type: text }, { key: Total_Amount, header: Total, type: money }, { key: Exported_At, header: Exported, type: date } ]
+                search: [Vendor_Name, Bill_No]
+    modals:
+      - { id: mark_bill_exported, kind: status, title: Mark as imported in Tally, entity: bills, direct: patch, context: { Status: Exported }, summary: [Vendor_Name, Bill_No, Total_Amount], submit: Mark exported, success: "Marked as exported", fields: [ { key: Exported_At, label: Exported on, type: date, default: today, required: true } ] }
+      - { id: mark_invoice_exported, kind: status, title: Mark as imported in Tally, entity: sales_invoices, direct: patch, context: { Status: Exported }, summary: [Tenant_Name, Period, Total_Amount], submit: Mark exported, success: "Marked as exported", fields: [ { key: Exported_At, label: Exported on, type: date, default: today, required: true } ] }
+
+  # ───────────── shared: every bill, by day and by vendor ─────────────
+  - id: bills
+    covers: [R8, R9, R10, R19]
+    route: /bills
+    label: All bills
+    icon: Receipt
+    subtitle: Every bill from every centre — pick a day, a vendor or a centre
+    desc: The register of every expense bill since the start
+    entity: bills
+    roles: [admin, ho, director, accounts]
+    read_only: "Bills move through the stage pages (HO approvals, Approvals, Finalise bills); this register is for finding bills by day, vendor and centre"
+    blocks:
+      - type: kpis
+        kpis: [ { metric: bills_today }, { metric: bills_month }, { metric: bills_value }, { metric: open_queries } ]
+      - type: table
+        covers: [R8, R9]
+        segments: { column: Status, all: All bills }
+        period: { column: Uploaded_At, presets: [today, yesterday, 7d, 30d, month, all], default: all }
+        views: [table, grouped, cards]
+        group: { by: Vendor_Name, label: "{v}", collapsible: true, summary: [ { label: Bills, count: true }, { label: Value, sum: Total_Amount } ] }
+        columns: [ { key: Vendor_Name, header: Vendor, type: text, sub: Bill_No }, { key: Centre, type: tag }, { key: Bill_Date, header: Bill date, type: date }, { key: Total_Amount, header: Total, type: money }, { key: Expense_Head, header: Head, type: text }, { key: Status, type: badge }, { key: Uploaded_At, header: Uploaded, type: date }, { key: Bill_ID, type: id, priority: low } ]
+        search: [Vendor_Name, Bill_No, Bill_ID, Narration]
+        filters: [Vendor_Name, Centre, Expense_Head]
+        card: { title: Vendor_Name, subtitle: [Centre, Bill_No], badge: Status, fields: [ { key: Total_Amount, label: Total, icon: IndianRupee }, { key: Bill_Date, label: Bill date, icon: Calendar } ], callout: { column: Query_Remarks, label: Query, tone: warn } }
+        drawer:
+          title_column: Vendor_Name
+          tabs:
+            - { label: Bill, sections: [ { type: tiles, title: Bill, columns: [Bill_No, Bill_Date, Centre, Centre_Coordinator] }, { type: tiles, title: GST, columns: [Taxable_Value, GST_Rate, CGST, SGST, IGST, Total_Amount] }, { type: callout, column: Narration, title: Narration, tone: neutral }, { type: callout, column: Query_Remarks, title: Query, tone: warn }, { type: callout, column: Query_Reply, title: Centre's reply, tone: info }, { type: fields, title: Photo, columns: [Bill_Photo] } ] }
+            - { label: Tally, sections: [ { type: tiles, title: Tally entry, columns: [Tally_Ledger, Expense_Head, Vendor_GSTIN, AI_Confidence] }, { type: callout, column: Accounts_Remarks, title: Accounts remarks, tone: neutral } ] }
+            - { label: Approval trail, sections: [ { type: timeline, title: Who did what, entity: audit_log, match: { column: Record_ID, equals: Bill_ID }, date: At, actor: Who, title_column: Action, body: Summary, empty: "No change recorded yet" } ] }
+
+  # ───────────── income: agreements → expected sales → sales invoices ─────────────
+  - id: income
+    covers: [R14, R15, R16]
+    route: /income
+    label: Agreements & sales
+    icon: FileSignature
+    subtitle: Expected sales from every agreement, and the invoices due tomorrow
+    desc: Agreements, expected sales and sales invoices
+    entity: agreements
+    roles: [admin, director, accounts]
+    badge: { entity: agreements, where: "Next_Due_Date<=today+1 and Invoice_Status!=Raised and Status=Active" }
+    blocks:
+      - type: kpis
+        kpis: [ { metric: expected_sales }, { metric: active_agreements }, { metric: due_tomorrow }, { metric: ending_soon } ]
+      - type: queue
+        covers: [R16]
+        entity: agreements
+        groups:
+          - { metric: due_tomorrow, action: raise_invoice, action_label: Raise invoice }
+        empty: No sales invoice is due tomorrow
+      - type: tabs
+        tabs:
+          - label: Agreements
+            blocks:
+              - type: table
+                covers: [R14, R15]
+                segments: { column: Status, all: All }
+                columns: [ { key: Tenant_Name, header: Tenant, type: text, sub: Unit }, { key: Centre, type: tag }, { key: Agreement_Type, header: Type, type: tag }, { key: Monthly_Total, header: Monthly (incl. GST), type: money }, { key: Next_Due_Date, header: Next due, type: due }, { key: End_Date, header: Ends, type: date }, { key: Status, type: badge }, { key: Agreement_ID, type: id, priority: low } ]
+                search: [Tenant_Name, Agreement_ID, Centre]
+                filters: [Centre, Agreement_Type]
+                drawer: { title_column: Tenant_Name, sections: [ { type: tiles, title: Agreement, columns: [Agreement_Type, Centre, Unit, Start_Date, End_Date, Due_Day] }, { type: tiles, title: Monthly, columns: [Monthly_Amount, GST_Rate, GST_Amount, Monthly_Total] }, { type: tiles, title: Tally, columns: [Tenant_Ledger, Income_Head, Tenant_GSTIN, Tenant_State] }, { type: list, title: Invoices raised, entity: sales_invoices, match: { column: Agreement_ID, equals: Agreement_ID }, label: Period, value: Total_Amount, limit: 6, empty: "No invoice yet" } ] }
+                actions: { header: [add_agreement], row: [raise_invoice, edit_agreement] }
+          - label: Sales invoices
+            blocks:
+              - type: table
+                entity: sales_invoices
+                segments: { column: Status, all: All }
+                columns: [ { key: Tenant_Name, header: Tenant, type: text, sub: Period }, { key: Centre, type: tag }, { key: Due_Date, header: Due, type: date }, { key: Total_Amount, header: Total, type: money }, { key: Status, type: badge }, { key: Invoice_ID, type: id, priority: low } ]
+                search: [Tenant_Name, Invoice_ID]
+      - type: charts
+        charts:
+          - { id: expected-by-centre, type: breakdown, entity: agreements, title: Expected sales by centre, group: Centre, sum: Monthly_Total, where: "Status=Active", style: bar }
+    modals:
+      - { id: raise_invoice, covers: [R16], kind: custom, primary: true, title: Raise sales invoice, flow: SALES_INVOICE, action: raise, entity: agreements, pass: [Agreement_ID, Tenant_Name, Tenant_State, Centre, Unit, Next_Due_Date, Monthly_Amount, GST_Rate, GST_Amount, Monthly_Total, Tenant_Ledger, Income_Head], summary: [Tenant_Name, Centre, Next_Due_Date, Monthly_Total], submit: Raise invoice, success: "Sales invoice prepared — it is on Tally export", fields: [] }
+      - { id: add_agreement, covers: [R14], kind: create, title: Add agreement, entity: agreements, direct: insert, context: { Invoice_Status: Upcoming, Status: Active }, columns: 2, submit: Save agreement, success: "Agreement saved",
+          fields: [ { key: Tenant_Name, label: Tenant, type: text, required: true }, { key: Tenant_GSTIN, label: Tenant GSTIN, type: text }, { key: Tenant_State, label: Tenant state, type: text, required: true }, { key: Centre, label: Centre, type: select, options_from: centres.Centre_Name, required: true }, { key: Unit, label: Unit / space, type: text, required: true }, { key: Agreement_Type, label: Type, type: select, options: [Rent, Fit-out, Rent + Fit-out], required: true }, { key: Start_Date, label: Start date, type: date, required: true }, { key: End_Date, label: End date, type: date, required: true }, { key: Monthly_Amount, label: Monthly amount before GST (₹), type: number, required: true }, { key: GST_Rate, label: GST rate (%), type: number, default: "18" }, { key: GST_Amount, label: GST amount (₹), type: number, required: true }, { key: Monthly_Total, label: Monthly total incl. GST (₹), type: number, required: true }, { key: Due_Day, label: Due day of the month, type: number, required: true }, { key: Next_Due_Date, label: Next due date, type: date, required: true }, { key: Tenant_Ledger, label: Tally ledger (tenant), type: text, required: true }, { key: Income_Head, label: Income head, type: select, options: [Rent Income, Fit-out Income], required: true } ] }
+      - { id: edit_agreement, kind: edit, title: Edit agreement, entity: agreements, direct: patch, columns: 2, fields: [ { key: Monthly_Amount, label: Monthly amount before GST (₹), type: number }, { key: GST_Amount, label: GST amount (₹), type: number }, { key: Monthly_Total, label: Monthly total incl. GST (₹), type: number }, { key: Next_Due_Date, label: Next due date, type: date }, { key: End_Date, label: End date, type: date }, { key: Invoice_Status, label: Invoice for this cycle, type: select, options: [Upcoming, Raised] }, { key: Status, label: Status, type: select, options_status: true } ] }
+
+  # ───────────── Setup ─────────────
+  - id: vendors
+    covers: [R3, R18]
+    route: /vendors
+    label: Vendor ledgers
+    group: Setup
+    icon: Link2
+    subtitle: Which vendor's bill goes to which Tally ledger and expense head
+    desc: The vendor → Tally ledger → expense head mapping Mugdha provides
+    entity: vendor_ledgers
+    roles: [admin, accounts]
+    blocks:
+      - type: table
+        segments: { column: Status, all: All }
+        columns: [ { key: Vendor_Name, header: Vendor on the bill, type: text, sub: City }, { key: Tally_Ledger, header: Tally ledger, type: text }, { key: Expense_Head, header: Expense head, type: tag }, { key: Vendor_GSTIN, header: GSTIN, type: text }, { key: Status, type: badge }, { key: Map_ID, type: id, priority: low } ]
+        search: [Vendor_Name, Tally_Ledger, Vendor_GSTIN]
+        filters: [Expense_Head, City]
+        drawer: { title_column: Vendor_Name, sections: [ { type: tiles, title: Mapping, columns: [Tally_Ledger, Expense_Head, Vendor_GSTIN, City] }, { type: list, title: Bills from this vendor, entity: bills, match: { column: Vendor_Name, equals: Vendor_Name }, label: Bill_No, value: Total_Amount, limit: 6, empty: "No bill yet" } ] }
+        empty: { title: No vendor mapped yet, reason: "Add each vendor once with its Tally ledger name and expense head — AI uses this list to fill new bills.", action: add_vendor }
+        actions: { header: [add_vendor], row: [edit_vendor] }
+    modals:
+      - { id: add_vendor, covers: [R18], kind: create, title: Add vendor ledger, direct: insert, context: { Status: Active }, columns: 2, submit: Save, success: "Vendor mapped", fields: [ { key: Vendor_Name, label: Vendor name (as on the bill), type: text, required: true }, { key: Vendor_GSTIN, label: Vendor GSTIN, type: text }, { key: City, label: City, type: text }, { key: Tally_Ledger, label: Tally ledger name, type: text, required: true }, { key: Expense_Head, label: Expense head, type: text, required: true } ] }
+      - { id: edit_vendor, kind: edit, title: Edit vendor ledger, direct: patch, columns: 2, fields: [ { key: Tally_Ledger, label: Tally ledger name, type: text, required: true }, { key: Expense_Head, label: Expense head, type: text, required: true }, { key: Vendor_GSTIN, label: Vendor GSTIN, type: text }, { key: City, label: City, type: text }, { key: Status, label: Status, type: select, options_status: true } ] }
+
+  - id: centres
+    covers: [R19]
+    route: /centres
+    label: Centres
+    group: Setup
+    icon: MapPin
+    subtitle: Every location and its coordinator
+    desc: Centres across Maharashtra and other states
+    entity: centres
+    roles: [admin, accounts]
+    blocks:
+      - type: table
+        columns: [ { key: Centre_Name, header: Centre, type: text, sub: City }, { key: State, type: tag }, { key: Coordinator, type: owner }, { key: Phone, type: text }, { key: Status, type: badge } ]
+        search: [Centre_Name, City, Coordinator]
+        filters: [State]
+        drawer: { title_column: Centre_Name, sections: [ { type: tiles, title: Centre, columns: [City, State, Coordinator, Phone] }, { type: list, title: Latest bills, entity: bills, match: { column: Centre, equals: Centre_Name }, label: Vendor_Name, value: Total_Amount, limit: 6, empty: "No bill yet" } ] }
+        actions: { header: [add_centre], row: [edit_centre] }
+    modals:
+      - { id: add_centre, kind: create, title: Add centre, direct: insert, context: { Status: Active }, columns: 2, submit: Save, success: "Centre added", fields: [ { key: Centre_Name, label: Centre name, type: text, required: true, placeholder: "e.g. Pune — Baner" }, { key: City, label: City, type: text, required: true }, { key: State, label: State, type: text, required: true }, { key: Coordinator, label: Centre coordinator, type: text, required: true }, { key: Phone, label: Phone, type: text } ] }
+      - { id: edit_centre, kind: edit, title: Edit centre, direct: patch, columns: 2, fields: [ { key: Coordinator, label: Centre coordinator, type: text }, { key: Phone, label: Phone, type: text }, { key: Status, label: Status, type: select, options_status: true } ] }
+
+  - id: activity
+    kind: system
+    route: /activity
+    label: Activity log
+    group: Setup
+    icon: History
+    desc: Every change — who approved, queried, finalised or exported which bill, and when
+    roles: [admin]
+    read_only: "The approval trail is written by the app from the session; nobody edits it"
+
+  - id: settings
+    kind: settings
+    route: /settings
+    label: Settings
+    icon: Settings
+    desc: Profile and password
+    roles: [admin, centre, ho, director, accounts]
+
+rules_in_code:
+  - { text: "The four stages are status changes the app makes itself (direct patch): At Centre → With HO → With Director → With Accounts → Finalised → Exported; who moved it and when is the audit row written from the session", covers: [R4, R5, R6, R7] }
+  - { text: "A query records Query_From (HO · Director · Accounts); the centre's reply returns the bill to exactly that stage", covers: [R10, R11] }
+  - { text: "Tally XML is built by code in the app (src/custom/TallyExport): one Purchase voucher per bill — vendor ledger credited with the total, expense head debited with the taxable value, Input CGST / SGST / IGST debited with the GST; one Sales voucher per invoice — tenant ledger debited, income head credited, Output CGST + SGST (same state as the centre) or IGST; downloaded as one file, then the rows are marked Exported", covers: [R12, R13, R17] }
+  - { text: "A Centre Coordinator's reads and writes of bills are pinned to Centre_Coordinator = the signed-in person, server-side", covers: [R19] }
+  - { text: "Expected sales = sum of Monthly_Total over Active agreements; Due tomorrow = Next_Due_Date ≤ tomorrow and not yet raised", covers: [R15, R16, R20] }
+
+not_in_v1:
+  - { text: "Direct push of entries into Tally Prime — v1 builds the XML Accounts imports in Tally (MoM decision 2); pending Chintan's confirmation", covers: [] }
+  - { text: "Spine application integration — pending Chintan; 'first, we need to get this working'", covers: [] }
+  - { text: "Raising tomorrow's sales invoices without a click (an unattended daily run) — v1 puts them on Accounts' Due tomorrow queue for one click; the kit's scheduled flows only sync from Tally", covers: [] }
+  - { text: "Reading data back from Tally (ledgers, outstanding) — not asked for in v1", covers: [] }
+  - { text: "Marathi / Hindi labels — English chosen at intake", covers: [] }

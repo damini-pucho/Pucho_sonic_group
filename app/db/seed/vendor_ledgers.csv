@@ -1,0 +1,9 @@
+Map_ID,Vendor_Name,Vendor_GSTIN,City,Tally_Ledger,Expense_Head,Status
+VL-001,XYZ Private Limited,29AAACX1234K1Z5,Bengaluru,XYZ Private Limited Bangalore,Repairs & Maintenance,Active
+VL-002,XYZ Private Limited,27AAACX1234K1Z9,Pune,XYZ Private Limited Pune,Repairs & Maintenance,Active
+VL-003,Shree Electricals,27AAKFS4471M1Z2,Pune,Shree Electricals - Pune,Electrical Repairs,Active
+VL-004,Clean Pro Facility Services,27AAGFC8890Q1Z1,Mumbai,Clean Pro Facility Services,Housekeeping Charges,Active
+VL-005,Secure Guard Services,27AAJFS5512R1Z4,Nagpur,Secure Guard Services Nagpur,Security Charges,Active
+VL-006,Interior Craft Fit-outs,27AAECI7781H1Z6,Mumbai,Interior Craft Fit-outs,Fit-out Expenses,Active
+VL-007,Office Mart Stationers,27ABCPO2210L1Z8,Pune,Office Mart Stationers,Printing & Stationery,Active
+VL-008,Bescom Power Supply,,Bengaluru,BESCOM Whitefield,Electricity Charges,Active

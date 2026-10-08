@@ -1,0 +1,4 @@
+Invoice_ID,Prepared_At,Agreement_ID,Tenant_Name,Tenant_State,Centre,Period,Due_Date,Taxable_Value,GST_Rate,GST_Amount,Total_Amount,Tenant_Ledger,Income_Head,Narration,Status,Exported_At
+SI-2026-0058,2026-10-04T09:00:00+05:30,AG-2026-012,Kaveri Foods Pvt Ltd,Karnataka,Bengaluru — Whitefield,Oct 2026,2026-10-05,210000,18,37800,247800,Kaveri Foods Pvt Ltd,Rent Income,"Rent for October 2026 — Ground floor retail, Whitefield",Prepared,
+SI-2026-0057,2026-09-30T09:00:00+05:30,AG-2026-010,Vidarbha Diagnostics,Maharashtra,Nagpur — Sitabuldi,Oct 2026,2026-10-01,160000,18,28800,188800,Vidarbha Diagnostics,Rent Income,"Rent for October 2026 — 1st floor, Sitabuldi",Exported,2026-10-01T11:00:00+05:30
+SI-2026-0056,2026-09-30T09:00:00+05:30,AG-2026-009,Sahyadri Co-work,Maharashtra,Pune — Baner,Sep 2026 (final),2026-10-01,450000,18,81000,531000,Sahyadri Co-work,Rent Income,"Rent — final month of agreement, 4th floor Baner",Exported,2026-10-01T11:00:00+05:30

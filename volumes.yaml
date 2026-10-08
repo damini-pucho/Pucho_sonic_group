@@ -1,0 +1,9 @@
+name: Sonic Group Expense & Income OS
+client: Sonic Group
+volumes:
+  bills:      { per_month: 300, quote: "⚑ assumed — multiple locations across different states [p.6]; volume not stated in the MoM" }
+  agreements: { per_month: 40,  quote: "⚑ assumed — 'We have agreements, and we will provide you with the summaries' [p.7]; count not stated" }
+  days:       { per_month: 30,  quote: "a daily check: 'exactly one day before that due date' [p.7]" }
+actions:
+  - { workflow: BILL_READ,     name: extract,  trigger: "Centre Coordinator uploads a bill photo", per: bills, ratio: 1.1, model: advanced }
+  - { workflow: SALES_INVOICE, name: prepare,  trigger: "Daily 09:00 — agreements due tomorrow", per: days, ratio: 1.0, model: none }

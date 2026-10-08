@@ -1,0 +1,37 @@
+[
+  {
+    "id": "USR-ADMIN",
+    "email": "admin@sonicgroup.pucho.ai",
+    "name": "Mugdha Borate",
+    "role": "admin",
+    "password": "admin12345"
+  },
+  {
+    "id": "USR-CENTRE",
+    "email": "centre@sonicgroup.pucho.ai",
+    "name": "Rohan Patil",
+    "role": "centre",
+    "password": "centre12345"
+  },
+  {
+    "id": "USR-HO",
+    "email": "ho@sonicgroup.pucho.ai",
+    "name": "Sneha Kulkarni",
+    "role": "ho",
+    "password": "hocoord12345"
+  },
+  {
+    "id": "USR-DIRECTOR",
+    "email": "director@sonicgroup.pucho.ai",
+    "name": "Anil Mehta",
+    "role": "director",
+    "password": "director12345"
+  },
+  {
+    "id": "USR-ACCOUNTS",
+    "email": "accounts@sonicgroup.pucho.ai",
+    "name": "Priya Joshi",
+    "role": "accounts",
+    "password": "accounts12345"
+  }
+]

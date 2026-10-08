@@ -1,0 +1,43 @@
+MoM — Sonic Group Expense & Income Automation, 06 Oct 2026 (Pucho.ai Solution Architecture Team). Text of the summary and the
+translated transcript, kept as the client's vocabulary for fidelity_check.py.
+
+Objective: To outline requirements for automating Sonic Group's expense and sales bill approval workflows and to explore
+integration options with Tally Prime and Spine.
+
+Key discussion points: Sonic Group handles commercial space rentals and fit-outs, currently managing expenses via a slow, manual,
+hard-copy approval process. A mobile application is needed for location coordinators to photograph bills, eliminating manual
+scanning and data entry. The application requires a 4-tier approval workflow: Center Coordinator -> Head Office Coordinator ->
+Director -> Accounts. The system needs sorting capabilities (by date, vendor) and a feature to raise queries on incorrect bills.
+AI is required to read bill images, extract data like GST and narrations, and map them to correct expense heads and specific Tally
+ledger names (to be provided by Mugdha). Sales/income invoices need to be auto-generated in Tally one day before the due date based
+on agreement data provided by Sonic Group. Direct API push into Tally may not be feasible; as a workaround, the application can
+generate an XML file for Tally import. Sonic Group currently uses the Spine application.
+
+Decisions: 4-stage approval workflow. If direct entry into Tally is technically unfeasible, the system will generate an XML file
+for data import. Mugdha will provide the mapping document connecting vendor names on invoices to their respective ledger names and
+expense heads in Tally. PuchoAI will develop a basic UI/UX mockup.
+
+Mugdha Borate: we have a company called Sonic Group. Here, we take commercial spaces on rent and lease them out, which sometimes
+includes fit-out work. Sometimes it is only fit-out and there is no rent. We want to automate our entire process. The Director
+needs everything in one online access. We have multiple locations across different states, here in Maharashtra as well as in
+other states. They have certain invoices at those locations, like expense bills. The person in charge there verifies the entire
+bill and sends it to the coordinator here. Then the coordinator verifies it. The coordinator hands it over to the accounts team,
+and then it goes to the Director. The Director approves it. We use Tally Prime. For our expenses, the coordinator at that
+particular location will just take a photo from their mobile and upload it. The coordinator will approve it, then our Head Office
+coordinator will also approve it. Then the Director will also check and approve it online, and then it will come to Accounts, and
+whatever finalization is needed will be done in Accounts. I can see all the invoices in that application. If my Director asks to
+see how many bills came on a particular day, I should be able to sort it by day. There should be some drop-down options. If it is
+related to a particular vendor, I need to see how many bills have come from that vendor since we started, completely categorized
+by vendor. If we have raised any queries, we will put them in the application. If a bill seems incorrect, we can flag it and add
+remarks. Whatever correction or reply comes from them, it will come through that. AI should read this bill, create an XML or
+Excel file out of it, and integrate it into Tally. We have an income part. We have agreements, and we will provide you with the
+summaries of the agreements. Whatever my expected sales are from the agreement, that should also be visible to me in your
+application. We have a due date, so exactly one day before that due date, its entry should be made and the invoice should be
+generated in Tally. Data will come from the photos of the bills for the expenses. For the sales invoices we will provide you with
+the data. It will be at 4 places: the center where it is received, then the HO coordinator, then the Director, and then
+Accounts. It should happen with one click. If your application can create an XML file, then an import link is definitely
+possible. Suppose the name on the invoice is XYZ Private Limited. If it is from Bangalore, in my Tally it might be XYZ Private
+Limited Bangalore. Which vendor's invoice is registered under which name in my books here, I will provide that to you. The file
+should come exactly according to the proper heads. You need to read the GST in it, you need to read its narration, you need to
+read the GST rates, and those entries should come properly and fall under the correct head. You will also have to read exactly
+which expense head it is, and the entry will go according to that.
