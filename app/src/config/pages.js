@@ -202,6 +202,8 @@ export const PAGES = [
                 "Status": "With HO"
               },
               "button": "Verify & send to HO",
+              "submit": "Verify & send to HO",
+              "success": "Verified — sent to HO",
               "title": "Check what AI read",
               "columns": 2,
               "fields": [
@@ -274,6 +276,8 @@ export const PAGES = [
                 "Status": "Cancelled"
               },
               "button": "Cancel bill",
+              "submit": "Cancel bill",
+              "success": "Bill cancelled",
               "title": "Cancel this bill",
               "summary": [
                 "Vendor_Name",
@@ -309,6 +313,8 @@ export const PAGES = [
                 "Status": "With HO"
               },
               "button": "Reply & resend",
+              "submit": "Send reply",
+              "success": "Reply sent — back with HO",
               "title": "Reply to HO",
               "summary": [
                 "Query_Remarks"
@@ -339,6 +345,8 @@ export const PAGES = [
                 "Status": "Cancelled"
               },
               "button": "Cancel bill",
+              "submit": "Cancel bill",
+              "success": "Bill cancelled",
               "title": "Cancel this bill",
               "summary": [
                 "Vendor_Name",
@@ -374,6 +382,8 @@ export const PAGES = [
                 "Status": "With Director"
               },
               "button": "Reply & resend",
+              "submit": "Send reply",
+              "success": "Reply sent — back with the Director",
               "title": "Reply to the Director",
               "summary": [
                 "Query_Remarks"
@@ -399,6 +409,8 @@ export const PAGES = [
                 "Status": "Cancelled"
               },
               "button": "Cancel bill",
+              "submit": "Cancel bill",
+              "success": "Bill cancelled",
               "title": "Cancel this bill",
               "summary": [
                 "Vendor_Name",
@@ -434,6 +446,8 @@ export const PAGES = [
                 "Status": "With Accounts"
               },
               "button": "Reply & resend",
+              "submit": "Send reply",
+              "success": "Reply sent — back with Accounts",
               "title": "Reply to Accounts",
               "summary": [
                 "Query_Remarks"
@@ -464,6 +478,8 @@ export const PAGES = [
                 "Status": "Cancelled"
               },
               "button": "Cancel bill",
+              "submit": "Cancel bill",
+              "success": "Bill cancelled",
               "title": "Cancel this bill",
               "summary": [
                 "Vendor_Name",
@@ -709,6 +725,8 @@ export const PAGES = [
                 "Status": "With Director"
               },
               "button": "Approve",
+              "submit": "Approve",
+              "success": "Approved — sent to the Director",
               "title": "Approve — send to the Director",
               "summary": [
                 "Vendor_Name",
@@ -725,6 +743,8 @@ export const PAGES = [
                 "Query_From": "HO"
               },
               "button": "Raise query",
+              "submit": "Raise query",
+              "success": "Query sent to the centre",
               "title": "Raise a query to the centre",
               "summary": [
                 "Vendor_Name",
@@ -811,6 +831,8 @@ export const PAGES = [
                 "Status": "With Accounts"
               },
               "button": "Approve",
+              "submit": "Approve",
+              "success": "Approved — sent to Accounts",
               "title": "Approve — send to Accounts",
               "summary": [
                 "Vendor_Name",
@@ -826,6 +848,8 @@ export const PAGES = [
                 "Query_From": "Director"
               },
               "button": "Raise query",
+              "submit": "Raise query",
+              "success": "Query sent to the centre",
               "title": "Raise a query to the centre",
               "summary": [
                 "Vendor_Name",
@@ -893,6 +917,8 @@ export const PAGES = [
                 "Status": "Finalised"
               },
               "button": "Finalise",
+              "submit": "Finalise",
+              "success": "Finalised — ready on Tally export",
               "title": "Finalise for Tally",
               "summary": [
                 "Vendor_Name",
@@ -935,6 +961,8 @@ export const PAGES = [
                 "Query_From": "Accounts"
               },
               "button": "Raise query",
+              "submit": "Raise query",
+              "success": "Query sent to the centre",
               "title": "Raise a query to the centre",
               "summary": [
                 "Vendor_Name",
