@@ -324,8 +324,6 @@ pages:
     roles: [admin, ho]
     badge: { entity: bills, where: "Status=With HO" }
     blocks:
-      - type: kpis
-        kpis: [ { metric: with_ho }, { metric: open_queries }, { metric: at_centre }, { metric: bills_today } ]
       - type: approvals
         title: Waiting with HO
         empty: No bill is waiting with HO
@@ -368,8 +366,6 @@ pages:
     roles: [admin, accounts]
     badge: { entity: bills, where: "Status=With Accounts" }
     blocks:
-      - type: kpis
-        kpis: [ { metric: with_accounts }, { metric: unmapped, filter: "Tally_Ledger is empty and Status not in [Cancelled, Exported]" }, { metric: ready_tally }, { metric: exported_month } ]
       - type: approvals
         title: Waiting with Accounts
         empty: Nothing to finalise

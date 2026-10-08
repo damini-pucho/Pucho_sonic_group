@@ -1,43 +1,43 @@
 {
-  "total_credits": 2590.0,
+  "total_credits": 2840.0,
   "range": [
-    1812.9999999999998,
-    3367.0
+    1987.9999999999998,
+    3692.0
   ],
   "rate": 0.3,
-  "rupees": 777.0,
+  "rupees": 852.0,
   "rows": [
     {
       "workflow": "BILL_READ",
       "action": "extract",
       "trigger": "extract from the OS",
       "runs": 330.0,
-      "credits_run": 7.0,
+      "credits_run": 8.0,
       "declared_run": 8.0,
       "model": "advanced",
       "sends": null,
-      "source": "flow json",
-      "credits_month": 2310.0
+      "source": "declared",
+      "credits_month": 2640.0
     },
     {
       "workflow": "SALES_INVOICE",
       "action": "raise",
       "trigger": "raise from the OS",
       "runs": 40.0,
-      "credits_run": 7.0,
+      "credits_run": 5.0,
       "declared_run": 5.0,
       "model": "none",
       "sends": null,
-      "source": "flow json",
-      "credits_month": 280.0
+      "source": "declared",
+      "credits_month": 200.0
     }
   ],
   "by_flow": {
-    "BILL_READ": 2310.0,
-    "SALES_INVOICE": 280.0
+    "BILL_READ": 2640.0,
+    "SALES_INVOICE": 200.0
   },
-  "total_month": 2590.0,
+  "total_month": 2840.0,
   "declared_month": 2840.0,
-  "counted": true,
-  "gap_ratio": 0.9119718309859155
+  "counted": false,
+  "gap_ratio": 1.0
 }

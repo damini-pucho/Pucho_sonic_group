@@ -684,52 +684,6 @@ export const PAGES = [
     },
     "blocks": [
       {
-        "type": "kpis",
-        "kpis": [
-          {
-            "metric": "with_ho",
-            "entity": "bills",
-            "label": "Waiting with HO",
-            "tone": "info",
-            "icon": "Building2",
-            "formula": "count where Status=With HO",
-            "filter": "Status=With HO",
-            "alert": false
-          },
-          {
-            "metric": "open_queries",
-            "entity": "bills",
-            "label": "Open queries",
-            "tone": "bad",
-            "icon": "MessageSquareWarning",
-            "formula": "count where Status=Query",
-            "filter": "Status=Query",
-            "alert": true
-          },
-          {
-            "metric": "at_centre",
-            "entity": "bills",
-            "label": "To verify at centre",
-            "tone": "warn",
-            "icon": "Camera",
-            "formula": "count where Status=At Centre",
-            "filter": "Status=At Centre",
-            "alert": true
-          },
-          {
-            "metric": "bills_today",
-            "entity": "bills",
-            "label": "Bills today",
-            "tone": "auto",
-            "icon": "Receipt",
-            "formula": "count where Uploaded_At=today",
-            "filter": "Uploaded_At=today",
-            "alert": false
-          }
-        ],
-        "id": "ho_approvals-kpis"
-      },
-      {
         "type": "approvals",
         "title": "Waiting with HO",
         "empty": "No bill is waiting with HO",
@@ -914,52 +868,6 @@ export const PAGES = [
       "where": "Status=With Accounts"
     },
     "blocks": [
-      {
-        "type": "kpis",
-        "kpis": [
-          {
-            "metric": "with_accounts",
-            "entity": "bills",
-            "label": "Waiting with Accounts",
-            "tone": "info",
-            "icon": "Calculator",
-            "formula": "count where Status=With Accounts",
-            "filter": "Status=With Accounts",
-            "alert": false
-          },
-          {
-            "metric": "unmapped",
-            "filter": "Tally_Ledger is empty and Status not in [Cancelled, Exported]",
-            "entity": "bills",
-            "label": "Vendor not mapped",
-            "tone": "warn",
-            "icon": "Link2Off",
-            "formula": "count where Tally_Ledger is empty and Status not in [Cancelled, Exported]",
-            "alert": true
-          },
-          {
-            "metric": "ready_tally",
-            "entity": "bills",
-            "label": "Bills ready for Tally",
-            "tone": "ok",
-            "icon": "FileDown",
-            "formula": "count where Status=Finalised",
-            "filter": "Status=Finalised",
-            "alert": false
-          },
-          {
-            "metric": "exported_month",
-            "entity": "bills",
-            "label": "Exported this month",
-            "tone": "ok",
-            "icon": "CheckCircle2",
-            "formula": "count where Status=Exported and Exported_At in month",
-            "filter": "Status=Exported and Exported_At in month",
-            "alert": false
-          }
-        ],
-        "id": "accounts_approvals-kpis"
-      },
       {
         "type": "approvals",
         "title": "Waiting with Accounts",

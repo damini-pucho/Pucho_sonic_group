@@ -58,10 +58,8 @@ Data: **PostgreSQL** (one database per client, single-tenant) · security: **§1
 | Overview | Needs action | needs_action: with_director · open_queries · due_tomorrow |
 | My bills | Needs you | approvals |
 | My bills | bills | cards / table; drawer per row |
-| HO approvals | kpis | kpis (strip) |
 | HO approvals | Waiting with HO | approvals |
 | Approvals | Waiting for the Director | approvals |
-| Finalise bills | kpis | kpis (strip) |
 | Finalise bills | Waiting with Accounts | approvals |
 | Tally export | kpis | kpis (strip) |
 | Tally export | custom | custom |
@@ -119,7 +117,7 @@ Data: **PostgreSQL** (one database per client, single-tenant) · security: **§1
 - Marathi / Hindi labels — English chosen at intake
 
 ## Footprint (lean frontend, v4.3)
-- footprint: 11 pages in the nav (0 hidden) · 27 KPIs · 3 charts · 11 modals · 3 drawer tabs · for 20 requirements
+- footprint: 11 pages in the nav (0 hidden) · 19 KPIs · 3 charts · 11 modals · 3 drawer tabs · for 20 requirements
 - Budget: overview ≤ 4 KPIs · ≤ 2 charts · ≤ 3 queues; a page ≤ 4 KPIs · ≤ 6 modals · drawer ≤ 3 tabs; nav pages ≤ requirements. Pages marked `badge: Preview` stay off the nav until `os.show_preview: true`.
 - Within budget.
 

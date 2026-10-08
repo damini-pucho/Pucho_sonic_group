@@ -53,8 +53,8 @@ export default function TallyExport({ data, reload }) {
           <p className="text-[13px] text-ink-3 mt-0.5">{TALLY.purchaseVoucher} vouchers for bills, {TALLY.salesVoucher} vouchers for invoices — one XML, imported from Gateway of Tally → Import → Vouchers.</p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Button icon={preview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} onClick={() => setPreview((p) => !p)} disabled={!count} data-os-action="tally-preview">{preview ? 'Hide XML' : 'Preview XML'}</Button>
-          <Button type="primary" icon={<FileDown className="w-3.5 h-3.5" />} loading={busy} disabled={!count} onClick={exportNow} data-os-action="tally-download">Download Tally XML{count ? ` (${count})` : ''}</Button>
+          <Button icon={preview ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />} onClick={() => setPreview((p) => !p)} disabled={!count} data-os-custom-action="tally-preview">{preview ? 'Hide XML' : 'Preview XML'}</Button>
+          <Button type="primary" icon={<FileDown className="w-3.5 h-3.5" />} loading={busy} disabled={!count} onClick={exportNow} data-os-custom-action="tally-download">Download Tally XML{count ? ` (${count})` : ''}</Button>
         </div>
       </div>
       <Tiles columns={4} items={[
