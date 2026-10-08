@@ -29,7 +29,8 @@ export default function TallyExport({ data, reload }) {
     setBusy(true);
     try {
       const stamp = new Date();
-      const name = `sonic-tally-import-${stamp.toISOString().slice(0, 16).replace(/[-:T]/g, '')}.xml`;
+      const p2 = (n) => String(n).padStart(2, '0');
+      const name = `sonic-tally-import-${stamp.getFullYear()}${p2(stamp.getMonth() + 1)}${p2(stamp.getDate())}-${p2(stamp.getHours())}${p2(stamp.getMinutes())}.xml`;
       const url = URL.createObjectURL(new Blob([xml], { type: 'application/xml' }));
       const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 2000);
