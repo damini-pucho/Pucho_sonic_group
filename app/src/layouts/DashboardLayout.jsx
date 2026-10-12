@@ -39,10 +39,14 @@ export default function DashboardLayout({ children, wiring }) {
       <Sidebar expanded={expanded} mobileOpen={mobileOpen} onToggle={() => setExpanded(!expanded)} onClose={() => setMobileOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden relative transition-[margin-left] duration-300" style={{ marginLeft: shellW }} data-os-content>
         <Header onMenuClick={() => setMobileOpen(true)} wiring={wiring} />
-        <main ref={mainRef} className="flex-1 overflow-y-auto custom-scrollbar">
+        <main ref={mainRef} className="flex-1 overflow-y-auto custom-scrollbar pb-14">
           <div className="page-gutter py-5 w-full">{children}</div>
-          <div className="page-gutter pb-5 w-full flex justify-end"><PoweredBy /></div>
         </main>
+        <div className="pointer-events-none absolute bottom-4 right-[var(--page-gutter,24px)] z-20">
+          <div className="pointer-events-auto">
+            <PoweredBy className="shadow-sm backdrop-blur-md" />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -11,7 +11,6 @@ import HeaderTools from './HeaderTools';
 import { cn } from '../utils/cn';
 import { DESIGN } from '../config/design';
 import { useT, LanguageSwitch } from '../i18n';
-import InstallPrompt from './InstallPrompt';
 
 export default function Header({ onMenuClick, wiring }) {
   const { pathname } = useLocation(); const meta = metaForPath(pathname);
@@ -27,8 +26,6 @@ export default function Header({ onMenuClick, wiring }) {
       {/* centre slot: global search (UI 10) — HeaderTools renders the search here and the bell on the right */}
       <div className="flex items-center justify-center min-w-0"><HeaderTools slot="search" /></div>
       <div className="flex items-center justify-end gap-2 min-w-0">
-        {wiring && wiring.total > 0 && wiring.wired < wiring.total && <span data-os-simulated={wiring.total - wiring.wired} title={`Not wired yet: ${(wiring.unwired || []).join(', ')} — the app applies these actions itself until the workflow URL is set (docs/security.md)`} className="hidden sm:inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-[var(--r-6)] bg-warn-soft text-warn-text"><span className="w-1.5 h-1.5 rounded-full bg-warn" />{wiring.wired === 0 ? 'Workflows simulated' : `${wiring.total - wiring.wired} of ${wiring.total} workflows simulated`}</span>}
-        <InstallPrompt />
         <LanguageSwitch />
         <HeaderTools slot="tools" />
       </div>

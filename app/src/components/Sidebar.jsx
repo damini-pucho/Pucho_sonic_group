@@ -177,7 +177,32 @@ export default function Sidebar({ expanded, mobileOpen, onToggle, onClose }) {
   const foot = (wide) => (
     <>
       {otherPortals.length > 0 && wide && <div className="px-3 pb-2">{otherPortals.map((p) => <Link key={p.id} to={p.base} className="nav-row flex items-center gap-2 px-3 text-xs font-medium"><Icons.ArrowLeftRight className="w-4 h-4" /> {t('Switch to')} {t(p.label)}</Link>)}</div>}
-      {shell === 'sidebar' && <button onClick={onToggle} aria-label={expanded ? 'Collapse sidebar' : 'Expand sidebar'} className="nav-row hidden lg:flex items-center justify-center mx-3 mb-2"><Icons.ChevronLeft className={cn('w-4 h-4 transition-transform', !expanded && 'rotate-180')} /></button>}
+      {shell === 'sidebar' && (
+        wide ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={t('Collapse sidebar')}
+            title={t('Collapse sidebar')}
+            className="nav-row hidden lg:flex items-center gap-2.5 px-3 mx-3 mb-2 h-9 rounded-lg border border-[var(--nav-line)] bg-surface/40 hover:bg-[var(--nav-hover)] hover:text-[var(--nav-ink)] transition-colors cursor-pointer group"
+            data-os-collapse-btn="expanded"
+          >
+            <Icons.ChevronLeft className="w-4 h-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
+            <span className="text-[13px] font-medium truncate">{t('Collapse')}</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-label={t('Expand sidebar')}
+            title={t('Expand sidebar')}
+            className="nav-row hidden lg:flex items-center justify-center w-9 h-9 mx-auto mb-2 rounded-lg border border-[var(--nav-line)] bg-surface/40 hover:bg-[var(--nav-hover)] hover:text-[var(--nav-ink)] transition-colors cursor-pointer group"
+            data-os-collapse-btn="collapsed"
+          >
+            <Icons.ChevronRight className="w-4 h-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+          </button>
+        )
+      )}
       <div className={cn('nav-line p-2 border-t', !wide && 'flex flex-col items-center')}>
         <ProfileMenu wide={wide} compact={!wide} onNavigate={onClose} />
       </div>
